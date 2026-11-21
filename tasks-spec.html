@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אפיון – מערכת משימות ותזכורות למזכיר</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2a37;--mute:#5f6b7a;--line:#e3e7ed;--pri:#1d5fa8;--pri2:#e7f0fb;--warnb:#fdf3e2;--warn:#8a4f06;--okb:#e7f6ec;--ok:#166534}
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;color:var(--ink);background:#f3f5f8;font-size:17px;line-height:1.75}
+nav{background:var(--pri);padding:12px 24px}
+nav a{color:#fff;text-decoration:none;font-weight:700;margin-left:18px;opacity:.9}
+main{max-width:920px;margin:0 auto;padding:28px 22px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin-bottom:18px}
+h1{font-size:30px;margin:0 0 6px;line-height:1.3}
+h2{font-size:22px;margin:0 0 10px;color:var(--pri);display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-size:16px;flex:none}
+h3{font-size:18px;margin:16px 0 6px}
+.lead{font-size:19px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:16px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:right;vertical-align:top}
+th{background:#f6f8fb}
+.dec{background:var(--warnb);border-radius:10px;padding:12px 16px;margin:10px 0}
+.dec b{color:var(--warn)}
+.def{background:var(--okb);color:var(--ok);border-radius:8px;padding:2px 8px;font-size:14px;font-weight:700;white-space:nowrap}
+.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin:12px 0}
+.flow div{flex:1;min-width:140px;background:var(--pri2);border-radius:10px;padding:10px;text-align:center;font-weight:600;color:var(--pri);font-size:15px}
+.flow b{align-self:center;color:var(--mute)}
+code{background:#eef1f5;padding:1px 6px;border-radius:5px;font-size:15px;direction:ltr;display:inline-block}
+.mail{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:12px 0;font-size:15px}
+.mail .h{background:#f6f8fb;padding:8px 14px;border-bottom:1px solid var(--line);color:var(--mute)}
+.mail .b{padding:14px}
+.mail .t{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.pill{border-radius:20px;padding:0 9px;font-size:13px;font-weight:700}
+.p1{background:#fde2e2;color:#a61b1b}.p2{background:#fdeccc;color:#8a4f06}.p3{background:#e3edf9;color:#1d5fa8}
+.btnl{margin-right:auto;font-size:13px;background:#1d5fa8;color:#fff;border-radius:6px;padding:1px 8px}
+.btnl.s{background:#eef1f5;color:var(--ink);margin-right:4px}
+ol li,ul li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<nav><a href="index.html">🏠 ראשי</a><a href="labels.html">🏷️ מדבקות</a><a href="tasks-spec.html">📋 אפיון משימות</a><a href="tasks-setup.html">⚙️ התקנת המשימות</a></nav>
+<main>
+<div class="card">
+<h1>מערכת משימות ותזכורות למזכיר – אפיון</h1>
+<p class="lead">המערכת מרכזת את משימות המשרד בטבלה אחת, בודקת אותן כל 10 דקות, ושולחת למייל של המזכיר תזכורות מסודרות לפי חשיבות. לפני סוף היום מגיע מייל מסכם: מה בוצע ומה נשאר פתוח.</p>
+<div class="flow"><div>📥 משימות נכנסות<br><small>טופס, טבלה או מייל</small></div><b>←</b><div>🗂️ טבלת משימות<br><small>Google Sheets</small></div><b>←</b><div>⏱️ בדיקה כל 10 דקות<br><small>מה צריך תזכורת?</small></div><b>←</b><div>✉️ תזכורת במייל<br><small>עם כפתור "בוצע"</small></div><b>←</b><div>📊 סיכום יומי<br><small>15:45</small></div></div>
+<p>בכל מקום שיש בו החלטה פתוחה, יש ברירת מחדל מסומנת <span class="def">ברירת מחדל</span>. ככה המערכת עובדת מהיום הראשון. אפשר לשנות כל ברירת מחדל בגיליון "הגדרות", בלי לגעת בקוד.</p>
+</div>
+
+<div class="card">
+<h2><span class="n">1</span>מאיפה מגיעות המשימות</h2>
+<p>כל המשימות נשמרות במקום אחד: <b>גיליון Google Sheets בשם "משימות המזכירות"</b>, בחשבון ה-Google של המזכיר. יש ארבע דרכים להכניס משימה:</p>
+<table>
+<tr><th style="width:26%">דרך</th><th>איך זה עובד</th></tr>
+<tr><td><b>טופס במסך הניהול</b></td><td>דף אינטרנט פשוט (נפתח בטלפון או במחשב): כותרת, תאריך, שעה, עדיפות, סוג. לוחצים "הוספה" וזהו.</td></tr>
+<tr><td><b>ישירות בטבלה</b></td><td>כותבים שורה חדשה בגיליון. המערכת משלימה לבד מזהה ושדות חסרים.</td></tr>
+<tr><td><b>ממייל (Gmail)</b></td><td>מסמנים מייל בתווית <code>משימה</code>. תוך 10 דקות הוא הופך למשימה: הנושא הופך לכותרת, והמשימה כוללת קישור למייל המקורי. אם בנושא כתוב "דחוף", המשימה מקבלת עדיפות דחוף. אחרי הקליטה המייל עובר לתווית <code>משימה/נקלט</code>.</td></tr>
+<tr><td><b>משימות חוזרות</b></td><td>משימה עם "חזרה": יומי, שבועי או חודשי. כשמסמנים אותה כבוצעה, נוצרת לבד ההופעה הבאה שלה (למשל "בדיקת נוכחות" כל בוקר).</td></tr>
+</table>
+<h3>השדות של כל משימה</h3>
+<table>
+<tr><th>שדה</th><th>אפשרויות</th></tr>
+<tr><td>כותרת, פרטים</td><td>טקסט חופשי</td></tr>
+<tr><td>תאריך</td><td>ריק = היום</td></tr>
+<tr><td>שעה</td><td>לא חובה. משימה עם שעה מקבלת תזכורת לפני המועד.</td></tr>
+<tr><td>עדיפות</td><td>דחוף · גבוה · רגיל · נמוך</td></tr>
+<tr><td>סוג</td><td>הורים · תשלומים · טלפון · מייל · מסמכים · כללי</td></tr>
+<tr><td>סטטוס</td><td>פתוח · בוצע · נדחה (עד שעה מסוימת) · בוטל</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">2</span>איך נקבע סדר העדיפויות</h2>
+<p>בכל תזכורת ובכל סיכום המשימות מסודרות לפי הכללים האלה, בסדר הזה:</p>
+<ol>
+<li><b>באיחור</b>: משימה שהמועד שלה כבר עבר מופיעה ראשונה.</li>
+<li><b>מתקרבת</b>: משימה שהשעה שלה בעוד פחות מ-30 דקות.</li>
+<li><b>עדיפות</b>: דחוף, אחר כך גבוה, רגיל ונמוך.</li>
+<li><b>שעה</b>: מוקדם לפני מאוחר. משימות בלי שעה באות אחרי משימות עם שעה.</li>
+<li><b>סוג</b>: לפי הסדר <span class="def">ברירת מחדל</span> הורים, תשלומים, טלפון, מייל, מסמכים, כללי.</li>
+</ol>
+<div class="dec"><b>להחלטה:</b> האם סוג המשימה צריך להשפיע על הסדר, או רק העדיפות והשעה? ואם כן, האם הסדר שלמעלה נכון?</div>
+</div>
+
+<div class="card">
+<h2><span class="n">3</span>מתי ובאיזו תדירות מזכירים</h2>
+<p>המערכת בודקת כל 10 דקות, אבל <b>רק בשעות העבודה</b>: <span class="def">ברירת מחדל</span> ימים א׳–ה׳, 07:30–16:00. בשבת, בחג ובערב שבת אחרי 12:00 היא לא שולחת כלום. ימי החגים נרשמים בגיליון "חגים".</p>
+<h3>משימה עם שעה</h3>
+<ul><li>תזכורת ראשונה <b>30 דקות לפני</b> המועד.</li><li>אם המועד עבר והמשימה עדיין פתוחה, המערכת חוזרת ומזכירה לפי העדיפות (בטבלה למטה).</li></ul>
+<h3>משימה בלי שעה</h3>
+<ul><li><b>דחוף וגבוה</b>: תזכורות חוזרות מתחילת יום העבודה.</li><li><b>רגיל ונמוך</b>: לא נשלחת להן תזכורת נפרדת. הן מופיעות רק במייל הבוקר ובסיכום היומי, כדי לא להציף.</li></ul>
+<table>
+<tr><th>עדיפות</th><th>תזכורת חוזרת כל…</th></tr>
+<tr><td><span class="pill p1">דחוף</span></td><td>30 דקות</td></tr>
+<tr><td><span class="pill p2">גבוה</span></td><td>שעה</td></tr>
+<tr><td><span class="pill p3">רגיל</span></td><td>שעתיים (רק אחרי שהמועד עבר)</td></tr>
+<tr><td>נמוך</td><td>לא חוזרת, רק בסיכומים</td></tr>
+</table>
+<h3>כדי לא להציף את תיבת המייל</h3>
+<ul>
+<li>כל הבדיקות של אותו סבב (10 דקות) מתאחדות ל<b>מייל אחד</b>, ובו כל המשימות מסודרות.</li>
+<li>תקרה: <span class="def">ברירת מחדל</span> לכל היותר 4 מיילי תזכורת בשעה.</li>
+<li>במייל בוקר (07:45) מגיעה רשימת היום כולה, מסודרת לפי העדיפות.</li>
+</ul>
+<div class="dec"><b>להחלטה:</b> האם הזמנים בטבלה מתאימים? האם צריך גם הסלמה, כלומר מייל למנהל על משימה דחופה שלא בוצעה שעתיים? <span class="def">ברירת מחדל: כבוי</span></div>
+</div>
+
+<div class="card">
+<h2><span class="n">4</span>איך מסמנים משימה כבוצעה</h2>
+<p>הדרך העיקרית היא <b>כפתור בתוך מייל התזכורת</b>. לחיצה אחת, והמשימה מסומנת ולא תגיע עליה עוד תזכורת. ליד כל משימה במייל יש שלושה כפתורים:</p>
+<div class="mail"><div class="h">מאת: מערכת המשימות · נושא: ⏰ 3 משימות לטיפול</div><div class="b">
+<div class="t"><span class="pill p1">דחוף</span> להתקשר להורים של משה לוי <small style="color:#888">(09:30, באיחור)</small><span class="btnl">✔ בוצע</span><span class="btnl s">⏸ עוד שעה</span><span class="btnl s">↪ מחר</span></div>
+<div class="t"><span class="pill p2">גבוה</span> לשלוח רשימות לטיול <small style="color:#888">(11:00)</small><span class="btnl">✔ בוצע</span><span class="btnl s">⏸ עוד שעה</span><span class="btnl s">↪ מחר</span></div>
+<div class="t"><span class="pill p3">רגיל</span> להזמין טונר<span class="btnl">✔ בוצע</span><span class="btnl s">⏸ עוד שעה</span><span class="btnl s">↪ מחר</span></div>
+</div></div>
+<p>דרכים נוספות: לחיצה על "בוצע" במסך הניהול, או כתיבת "בוצע" בעמודת הסטטוס בגיליון. הכפתורים עובדים רק כשהמזכיר מחובר לחשבון ה-Google שלו, כך שאף אחד אחר לא יכול לסמן לו משימות.</p>
+<div class="dec"><b>להחלטה:</b> האם רוצים גם סימון במענה למייל, כלומר לענות למייל התזכורת במילה "בוצע"? זה אפשרי, אבל פחות אמין מכפתור. <span class="def">ברירת מחדל: לא, נשאיר לשלב ב׳</span></div>
+</div>
+
+<div class="card">
+<h2><span class="n">5</span>הסיכום היומי</h2>
+<p><b>שעה:</b> <span class="def">ברירת מחדל</span> 15:45, רבע שעה לפני סוף יום העבודה. ביום שישי, אם עובדים, הסיכום נשלח ב-11:45.</p>
+<p><b>תוכן המייל:</b></p>
+<ol>
+<li><b>שורת סיכום:</b> "היום בוצעו 7 מתוך 10 משימות".</li>
+<li><b>✔ מה בוצע היום</b>: רשימה עם שעת הביצוע.</li>
+<li><b>⏳ מה נשאר פתוח</b>: מסודר לפי עדיפות, ומשימות באיחור מסומנות באדום.</li>
+<li><b>📅 מה מחכה מחר</b>: תצוגה מקדימה של משימות מחר.</li>
+<li>כפתור <b>"העבר את כל הפתוחות למחר"</b>, בלחיצה אחת.</li>
+</ol>
+<div class="dec"><b>להחלטה:</b> האם הסיכום יישלח רק למזכיר, או גם למנהל (העתק)? <span class="def">ברירת מחדל: רק למזכיר</span></div>
+</div>
+
+<div class="card">
+<h2><span class="n">6</span>הצעה טכנית</h2>
+<table>
+<tr><th style="width:28%">רכיב</th><th>פתרון</th></tr>
+<tr><td>אחסון המשימות</td><td>Google Sheets: גיליונות "משימות", "הגדרות", "חגים" ו"יומן שליחה".</td></tr>
+<tr><td>המנוע</td><td><b>Google Apps Script</b> שמחובר לגיליון, בחשבון של המזכיר. לא צריך שרת, ואין עלות.</td></tr>
+<tr><td>בדיקה כל 10 דקות</td><td>טריגר זמן מובנה, <code>everyMinutes(10)</code>, שמריץ את הפונקציה <code>tick()</code>. מנעול (LockService) מונע הרצה כפולה.</td></tr>
+<tr><td>שליחת המיילים</td><td>מחשבון ה-Gmail של המזכיר אליו עצמו (GmailApp), במייל מעוצב בעברית מימין לשמאל.</td></tr>
+<tr><td>כפתורי "בוצע" ומסך ניהול</td><td>Web App של Apps Script. ההרשאה היא "רק אני", ולכן רק המזכיר יכול להיכנס.</td></tr>
+<tr><td>קליטה מ-Gmail</td><td>חיפוש מיילים עם התווית <code>משימה</code> בכל סבב.</td></tr>
+</table>
+<h3>מגבלות שכדאי לדעת</h3>
+<ul>
+<li>בחשבון Gmail רגיל אפשר לשלוח מסקריפט עד <b>100 מיילים ביום</b>. עם תקרה של 4 מיילים בשעה המערכת שולחת לכל היותר כ-35 ביום, כלומר רחוק מהמגבלה. בחשבון Google Workspace של מוסד המגבלה גבוהה בהרבה.</li>
+<li>טריגר של 10 דקות לא מדויק לדקה. ההפעלה יכולה לזוז בכמה דקות.</li>
+<li>הכול רץ בענן של Google. המחשב של המזכיר לא צריך להיות דלוק.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2><span class="n">7</span>שאלות פתוחות להחלטה</h2>
+<p>המערכת כבר בנויה לפי ברירות המחדל שבסוגריים. כל תשובה אחרת היא שינוי בגיליון "הגדרות", או שינוי קטן בקוד.</p>
+<ol>
+<li>מה שעות העבודה של המזכיר, והאם עובדים בימי שישי? <small>(א׳–ה׳, 07:30–16:00)</small></li>
+<li>האם המייל הוא חשבון Gmail פרטי או חשבון של המוסד (Google Workspace)? זה משפיע על מגבלת המיילים ועל ההרשאות.</li>
+<li>מי עוד מכניס משימות: רק המזכיר, או גם המנהל? אם גם המנהל, אפשר לשתף איתו את הגיליון. <small>(רק המזכיר)</small></li>
+<li>האם הזמנים בטבלת התזכורות מתאימים? <small>(דחוף 30 דק׳, גבוה שעה, רגיל שעתיים)</small></li>
+<li>כמה מיילים בשעה זה עדיין לא מטריד? <small>(4)</small></li>
+<li>האם צריך הסלמה למנהל על משימה דחופה שלא בוצעה? <small>(לא)</small></li>
+<li>האם רוצים גם מייל בוקר עם רשימת היום? <small>(כן, 07:45)</small></li>
+<li>שעת הסיכום היומי, והאם לשלוח העתק למנהל? <small>(15:45, רק למזכיר)</small></li>
+<li>אילו סוגי משימות באמת קיימים במשרד, ובאיזה סדר חשיבות? <small>(הורים, תשלומים, טלפון, מייל, מסמכים, כללי)</small></li>
+<li>האם תזכורות בהודעת SMS או וואטסאפ נחוצות? זה דורש שירות בתשלום, ולכן לא נכלל. <small>(רק מייל)</small></li>
+<li>אילו משימות חוזרות קבועות יש, כדי שנכניס אותן מראש?</li>
+</ol>
+</div>
+<p style="text-align:center"><a href="tasks-setup.html" style="font-weight:700;color:var(--pri)">להוראות ההתקנה של המערכת ←</a></p>
+</main>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>התקנת מערכת המשימות והתזכורות</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2a37;--mute:#5f6b7a;--line:#e3e7ed;--pri:#1d5fa8;--pri2:#e7f0fb;--warnb:#fdf3e2;--warn:#8a4f06;--okb:#e7f6ec;--ok:#166534}
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;color:var(--ink);background:#f3f5f8;font-size:17px;line-height:1.75}
+nav{background:var(--pri);padding:12px 24px}
+nav a{color:#fff;text-decoration:none;font-weight:700;margin-left:18px;opacity:.9}
+main{max-width:860px;margin:0 auto;padding:28px 22px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:16px}
+h1{font-size:28px;margin:0 0 6px}
+.step{display:flex;gap:16px}
+.step .n{flex:none;width:38px;height:38px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-weight:800;font-size:18px}
+.step h2{margin:4px 0 6px;font-size:20px}
+.step p,.step ul{margin:4px 0}
+code,kbd{background:#eef1f5;padding:1px 7px;border-radius:5px;font-size:15px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:9px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;margin:4px 0 4px 6px}
+.btn.sec{background:var(--pri2);color:var(--pri)}
+.tip{background:var(--warnb);color:var(--warn);border-radius:10px;padding:10px 14px;margin:8px 0;font-size:16px}
+.good{background:var(--okb);color:var(--ok);border-radius:10px;padding:10px 14px;margin:8px 0}
+.toast{position:fixed;bottom:20px;left:20px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.25s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<nav><a href="index.html">🏠 ראשי</a><a href="labels.html">🏷️ מדבקות</a><a href="tasks-spec.html">📋 אפיון משימות</a><a href="tasks-setup.html">⚙️ התקנת המשימות</a></nav>
+<main>
+<div class="card">
+<h1>התקנת מערכת המשימות והתזכורות</h1>
+<p>ההתקנה נעשית <b>פעם אחת, בחשבון ה-Google של המזכיר</b>, ולוקחת בערך 10 דקות. אחרי ההתקנה הכול רץ לבד בענן של Google, גם כשהמחשב כבוי. אין תשלום ואין שרת.</p>
+<div class="tip">💡 כדאי לעבוד במחשב, בדפדפן כרום, כשמחוברים לחשבון ה-Gmail שאליו אמורות להגיע התזכורות.</div>
+</div>
+
+<div class="card step"><div class="n">1</div><div>
+<h2>יוצרים גיליון חדש</h2>
+<p>פותחים את <a href="https://sheets.new" target="_blank">sheets.new</a>. ייפתח גיליון ריק. נותנים לו שם למעלה: <b>משימות המזכירות</b>.</p>
+</div></div>
+
+<div class="card step"><div class="n">2</div><div>
+<h2>פותחים את עורך הסקריפט</h2>
+<p>בתפריט העליון של הגיליון: <b>תוספים ← Apps Script</b> (באנגלית: Extensions ← Apps Script). נפתחת לשונית חדשה עם קובץ בשם <code>Code.gs</code>.</p>
+</div></div>
+
+<div class="card step"><div class="n">3</div><div>
+<h2>מדביקים את הקוד הראשי</h2>
+<p>מוחקים את כל מה שכתוב בקובץ <code>Code.gs</code>, ומדביקים במקומו את הקוד:</p>
+<button class="btn" onclick="copyFile('apps-script/Code.gs')">📋 העתקת הקוד הראשי</button><a class="btn sec" href="apps-script/Code.gs" target="_blank">צפייה בקוד</a>
+<p>שומרים עם <kbd>Ctrl</kbd>+<kbd>S</kbd>.</p>
+</div></div>
+
+<div class="card step"><div class="n">4</div><div>
+<h2>מוסיפים את מסך הניהול</h2>
+<p>ליד המילה "קבצים" לוחצים <b>+</b> ובוחרים <b>HTML</b>. קוראים לקובץ בדיוק <code>App</code>, בלי סיומת. מוחקים את מה שכתוב בו ומדביקים:</p>
+<button class="btn" onclick="copyFile('apps-script/App.html')">📋 העתקת מסך הניהול</button>
+<p>שומרים עם <kbd>Ctrl</kbd>+<kbd>S</kbd>.</p>
+</div></div>
+
+<div class="card step"><div class="n">5</div><div>
+<h2>מגדירים את אזור הזמן</h2>
+<p>בצד ימין לוחצים על ⚙️ <b>הגדרות הפרויקט</b>. ב"אזור זמן" בוחרים <b>(GMT+02:00) Jerusalem</b>.</p>
+</div></div>
+
+<div class="card step"><div class="n">6</div><div>
+<h2>מפרסמים את מסך הניהול</h2>
+<ul>
+<li>למעלה לוחצים על <b>פריסה ← פריסה חדשה</b> (Deploy ← New deployment).</li>
+<li>ליד "בחירת סוג" לוחצים על ⚙️ ובוחרים <b>אפליקציית אינטרנט</b> (Web app).</li>
+<li>בשדה "הפעלה בתור" בוחרים <b>אני</b>. בשדה "למי יש גישה" בוחרים <b>רק אני</b>.</li>
+<li>לוחצים <b>פריסה</b>, ואז <b>מתן גישה</b> ובוחרים את החשבון.</li>
+</ul>
+<div class="tip">⚠ תופיע הודעה ש-"Google לא אימתה את האפליקציה". זה תקין, כי זו אפליקציה שיצרתם בעצמכם. לוחצים <b>מתקדם</b>, אחר כך <b>מעבר אל … (לא בטוח)</b>, ובסוף <b>אישור</b>.</div>
+<p>בסוף מופיע <b>קישור של אפליקציית האינטרנט</b>. זה מסך המשימות של המזכיר, וכדאי לשמור אותו במועדפים, גם בטלפון.</p>
+</div></div>
+
+<div class="card step"><div class="n">7</div><div>
+<h2>מפעילים את התזכורות</h2>
+<p>חוזרים ללשונית של הגיליון ומרעננים את הדף (<kbd>F5</kbd>). אחרי כמה שניות מופיע בתפריט העליון <b>📋 משימות</b>. לוחצים עליו ובוחרים <b>התקנה / הפעלת תזכורות</b>, ואם מתבקשים, מאשרים גישה.</p>
+<div class="good">✔ אם הכול תקין, בגיליון ייווצרו הלשוניות "משימות", "הגדרות", "חגים" ו"יומן", יחד עם שתי משימות לדוגמה. מעכשיו המערכת בודקת כל 10 דקות.</div>
+</div></div>
+
+<div class="card step"><div class="n">8</div><div>
+<h2>בודקים שזה עובד</h2>
+<p>בתפריט <b>📋 משימות</b> לוחצים <b>שליחת סיכום יומי עכשיו (בדיקה)</b>. תוך דקה צריך להגיע מייל לתיבה. אחר כך כדאי למלא בלשונית <b>"הגדרות"</b> את שעות העבודה, ובלשונית <b>"חגים"</b> את תאריכי החגים.</p>
+</div></div>
+
+<div class="card">
+<h2 style="margin-top:0">שימוש יומיומי</h2>
+<ul>
+<li><b>הוספת משימה:</b> במסך הניהול (הקישור משלב 6), או בשורה חדשה בגיליון.</li>
+<li><b>משימה ממייל:</b> ב-Gmail מסמנים את המייל בתווית <code>משימה</code>. התווית נוצרת לבד אחרי הבדיקה הראשונה.</li>
+<li><b>סימון "בוצע":</b> לוחצים על הכפתור הירוק במייל התזכורת, או במסך הניהול.</li>
+<li><b>הפסקה זמנית</b> (למשל בחופש): בתפריט <b>📋 משימות</b> בוחרים <b>הפסקת התזכורות</b>.</li>
+</ul>
+<p><b>מעדכנים קוד בעתיד?</b> מדביקים את הקוד החדש, שומרים, ואז <b>פריסה ← ניהול פריסות ← ✏️ עריכה ← גרסה: חדשה ← פריסה</b>. הקישור של מסך הניהול נשאר אותו קישור.</p>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+async function copyFile(path){
+ const t=document.getElementById('toast');
+ try{const txt=await (await fetch(path,{cache:'no-store'})).text();await navigator.clipboard.writeText(txt);t.textContent='✔ הקוד הועתק – עכשיו מדביקים ב-Apps Script (Ctrl+V)'}
+ catch(e){t.textContent='ההעתקה לא הצליחה – פתחו "צפייה בקוד", סמנו הכול (Ctrl+A) והעתיקו'}
+ t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)}
+</script>
+</body>
+</html>

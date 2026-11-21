@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2a37;--mute:#6b7280;--line:#e3e7ed;--pri:#1d5fa8;--pri2:#e7f0fb;--ok:#15803d;--okb:#e7f6ec;--bad:#b91c1c;--badb:#fde8e8}
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,Arial,sans-serif;background:#f3f5f8;color:var(--ink);font-size:16px}
+header{background:var(--pri);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:21px}
+.st{margin-right:auto;font-size:14px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px}
+main{max-width:980px;margin:0 auto;padding:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+h2{margin:0 0 10px;font-size:19px;display:flex;align-items:center;gap:8px}
+h2 .c{background:var(--pri2);color:var(--pri);border-radius:20px;padding:0 10px;font-size:15px}
+.grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+label{display:block;font-size:13px;color:var(--mute);font-weight:600;margin-bottom:3px}
+input,select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid #cdd4dd;border-radius:8px;background:#fff}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:9px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn.sec{background:var(--pri2);color:var(--pri)} .btn.sm{padding:5px 11px;font-size:14px} .btn.ok{background:var(--ok)} .btn.gh{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.5}
+.task{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid #eef1f5;flex-wrap:wrap}
+.task:last-child{border-bottom:0}
+.pill{border-radius:20px;padding:1px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-דחוף{background:#fde2e2;color:#a61b1b}.p-גבוה{background:#fdeccc;color:#8a4f06}.p-רגיל{background:#e3edf9;color:#1d5fa8}.p-נמוך{background:#eef1f5;color:#4b5563}
+.tt{font-weight:700;font-size:16px}
+.meta{color:var(--mute);font-size:13px}
+.late{color:var(--bad);font-weight:700}
+.acts{margin-right:auto;display:flex;gap:6px}
+.done .tt{text-decoration:line-through;color:#9aa3ad}
+.empty{color:var(--mute);text-align:center;padding:16px}
+.toast{position:fixed;bottom:18px;left:18px;background:var(--ink);color:#fff;padding:11px 16px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+details summary{cursor:pointer;font-weight:700;color:var(--pri)}
+@media(max-width:700px){.grid,.grid2{grid-template-columns:1fr 1fr}.acts{margin-right:0;width:100%}}
+</style>
+</head>
+<body>
+<header><div style="font-size:26px">📋</div><h1>המשימות שלי</h1><span class="st" id="st">טוען…</span></header>
+<main>
+  <div class="card">
+    <h2>➕ משימה חדשה</h2>
+    <form id="f">
+      <div class="grid">
+        <div><label>מה צריך לעשות? *</label><input id="title" required placeholder="לדוגמה: להתקשר להורים של..."></div>
+        <div><label>תאריך</label><input type="date" id="date"></div>
+        <div><label>שעה (לא חובה)</label><input type="time" id="time"></div>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <div><label>עדיפות</label><select id="priority"><option>דחוף</option><option>גבוה</option><option selected>רגיל</option><option>נמוך</option></select></div>
+        <div><label>סוג</label><select id="type"></select></div>
+        <div><label>חזרה</label><select id="repeat"><option value="">חד פעמית</option><option>יומי</option><option>שבועי</option><option>חודשי</option></select></div>
+        <div style="align-self:end"><button class="btn" style="width:100%" id="addBtn">הוספה</button></div>
+      </div>
+      <div style="margin-top:10px"><input id="details" placeholder="פרטים נוספים (לא חובה)"></div>
+    </form>
+  </div>
+
+  <div class="card"><h2>📌 להיום <span class="c" id="cToday">0</span></h2><div id="today"></div></div>
+  <div class="card"><h2>✔ בוצע היום <span class="c" id="cDone">0</span></h2><div id="done"></div></div>
+  <div class="card"><h2>📅 בהמשך <span class="c" id="cFuture">0</span></h2><div id="future"></div></div>
+
+  <div class="card">
+    <details><summary>⚙️ הגדרות ובדיקות</summary>
+      <p class="meta" id="mailInfo"></p>
+      <div class="row">
+        <button class="btn sec" onclick="run('apiRunNow')">הרצת בדיקה עכשיו</button>
+        <button class="btn sec" onclick="run('apiSummaryNow')">שליחת סיכום יומי לבדיקה</button>
+        <button class="btn gh" id="onoff"></button>
+        <a class="btn gh" id="sheetLink" target="_blank" style="text-decoration:none">פתיחת הגיליון</a>
+      </div>
+      <p class="meta">שעות עבודה, זמני תזכורות, מייל לסיכום ועוד – משנים בגיליון, בלשונית "הגדרות".</p>
+    </details>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.x);toast.x=setTimeout(()=>t.classList.remove('show'),2800)};
+let D=null;
+function call(fn,...args){return new Promise((ok,no)=>google.script.run.withSuccessHandler(ok).withFailureHandler(e=>{toast('שגיאה: '+(e.message||e));no(e)})[fn](...args))}
+function fmtDate(k){if(!k)return'';const [y,m,d]=k.split('-');return d+'/'+m}
+function row(t,kind){
+  const meta=[t.type,t.date&&t.date!==D.todayKey?fmtDate(t.date):'',t.time,t.repeat?'🔁 '+t.repeat:'',t.status==='נדחה'?'⏸ נדחה':'',t.doneAt&&kind==='done'?'בוצע ב-'+t.doneAt:''].filter(Boolean).join(' · ');
+  const acts=kind==='done'?`<button class="btn sm gh" onclick="act('reopen','${t.id}')">↩ החזרה</button>`
+   :`<button class="btn sm ok" onclick="act('done','${t.id}')">✔ בוצע</button>${kind==='today'?`<button class="btn sm gh" onclick="act('snooze','${t.id}')">⏸ שעה</button><button class="btn sm gh" onclick="act('tomorrow','${t.id}')">↪ מחר</button>`:''}<button class="btn sm gh" title="ביטול המשימה" onclick="act('cancel','${t.id}')">✕</button>`;
+  return `<div class="task ${kind==='done'?'done':''}"><span class="pill p-${t.priority}">${t.priority}</span><div><div class="tt">${esc(t.title)}</div>
+   <div class="meta">${esc(meta)} ${t.late?'<span class="late">· באיחור</span>':''}</div>${t.details?`<div class="meta">${esc(t.details.split('\n')[0]).slice(0,120)}</div>`:''}</div><div class="acts">${acts}</div></div>`}
+function draw(d){D=d;
+  $('#today').innerHTML=d.today.map(t=>row(t,'today')).join('')||'<div class="empty">אין משימות פתוחות להיום 🎉</div>';
+  $('#done').innerHTML=d.done.map(t=>row(t,'done')).join('')||'<div class="empty">עדיין לא סומנו משימות היום</div>';
+  $('#future').innerHTML=d.future.map(t=>row(t,'future')).join('')||'<div class="empty">אין משימות עתידיות</div>';
+  $('#cToday').textContent=d.today.length;$('#cDone').textContent=d.done.length;$('#cFuture').textContent=d.future.length;
+  $('#st').textContent=d.active?'🟢 התזכורות פעילות – כל 10 דקות':'🔴 התזכורות כבויות';
+  $('#onoff').textContent=d.active?'הפסקת התזכורות':'הפעלת התזכורות';
+  $('#onoff').onclick=()=>run(d.active?'apiStop':'apiSetup');
+  $('#mailInfo').textContent='התזכורות נשלחות אל: '+d.email;
+  $('#sheetLink').href=d.sheetUrl;
+  const ty=$('#type');if(!ty.options.length)ty.innerHTML=d.types.map(x=>`<option>${esc(x)}</option>`).join('');
+  if(!$('#date').value)$('#date').value=d.todayKey}
+async function act(a,id){const d=await call('apiAction',a,id);draw(d);toast({done:'✔ סומן כבוצע',snooze:'⏸ נזכיר שוב בעוד שעה',tomorrow:'↪ הועבר למחר',reopen:'המשימה נפתחה מחדש',cancel:'המשימה בוטלה'}[a])}
+async function run(fn){const r=await call(fn);toast(r||'בוצע');draw(await call('apiList'))}
+$('#f').onsubmit=async e=>{e.preventDefault();const b=$('#addBtn');b.disabled=true;
+  try{const o={title:$('#title').value,date:$('#date').value,time:$('#time').value,priority:$('#priority').value,type:$('#type').value,repeat:$('#repeat').value,details:$('#details').value};
+   draw(await call('apiAdd',o));$('#title').value='';$('#time').value='';$('#details').value='';toast('המשימה נוספה')}finally{b.disabled=false}};
+call('apiList').then(draw);
+setInterval(()=>call('apiList').then(draw),120000);
+</script>
+</body>
+</html>
