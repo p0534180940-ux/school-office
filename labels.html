@@ -135,9 +135,10 @@ function autoSize(s){s.rows=Math.ceil(s.count/s.cols);
  s.w=+Math.max(0.5,(21-2*s.side-(s.cols-1)*s.gapX)/s.cols).toFixed(2);
  s.h=+Math.max(0.5,(29.7-2*s.top-(s.rows-1)*s.gapY)/s.rows).toFixed(2)}
 const EMOJIS=["⭐","🌟","✏️","📚","📖","🍎","🎈","🌈","☀️","🌙","🌸","🌻","🌳","🍀","🐝","🦋","🐠","🐻","🦁","🐘","🐢","🚀","🚂","⚽","🎨","🎵","🏫","✡️","🕎","💙","❤️","💚"];
+const KID_EMOJIS=["⭐","🍎","🚀","⚽","🌈","🐻","🦁","🐢","🐝","🦋","🐠","🚂","🎈","🌻","🍀","🌙","☀️","🍓","🍋","🚲","🎨","📚","✏️","🐘","🐳","🦊","🐧","🍉","🚁","⛵","🏀","🎵","🌳","🌸","🍪","🧩","🐞","🦒","🚜","🍇"];
 const FONTS=[["Assistant","אסיסטנט (רגיל)"],["Heebo","היבו"],["Rubik","רוביק (עגול)"],["Varela Round","ורלה (עגול וברור)"],["Secular One","סקולר (כותרת עבה)"],["Amatic SC","אמטיק (כתב יד)"]];
 const DEF={
-  classes:[{id:"c1",name:"כיתה א'1",students:["יוסף כהן","משה לוי","אברהם פרידמן","דוד גולדברג","שמואל רוזנטל","יעקב שטרן"],icon:{type:"emoji",value:"⭐"}}],
+  classes:[{id:"c1",name:"כיתה א'1",students:["יוסף כהן","משה לוי","אברהם פרידמן","דוד גולדברג","שמואל רוזנטל","יעקב שטרן"],icon:{type:"kids",value:""}}],
   cur:"c1",
   sheet:{count:30,cols:3,rows:10,w:7.0,h:2.97,top:0,side:0,gapX:0,gapY:0,auto:true,paper:"A4",offX:0,offY:0},
   design:{font:"Varela Round",bold:true,color:"#1b2a4a",maxSize:55,iconPos:"right",iconSize:70,showClass:false,border:false,borderColor:"#9aa7b8",align:"center"},
@@ -148,6 +149,7 @@ try{S=JSON.parse(localStorage.getItem("labelsApp")||"null")}catch(e){}
 if(!S||!S.classes)S=structuredClone(DEF);
 for(const k of ["sheet","design","print"])S[k]={...DEF[k],...S[k]};
 if(!S.sheet.count)S.sheet.count=(S.sheet.cols*S.sheet.rows)||30;
+if(!S.kidsIcons){S.classes.forEach(c=>{if(!c.icon||c.icon.type=="emoji")c.icon={type:"kids",value:""}});S.kidsIcons=1}
 if(S.print.mode){delete S.print.mode;S.print.each=0;S.print.fill="blank";S.print.general=0}
 const save=()=>{try{localStorage.setItem("labelsApp",JSON.stringify(S))}catch(e){toast("שימו לב: לא ניתן לשמור בדפדפן (ייתכן שהתמונה גדולה מדי)")}};
 const cls=()=>S.classes.find(c=>c.id==S.cur)||S.classes[0];
@@ -282,8 +284,9 @@ function pDesign(){const d=S.design,c=cls(),ic=c.icon||{type:"none"};
  return `<h3>עיצוב המדבקה</h3>
  <h4>סמל ליד השם – ${esc(c.name)}</h4>
  <div class="hint">לכל כיתה אפשר לבחור סמל משלה.</div>
- <div class="seg"><button class="${ic.type=='emoji'?'on':''}" onclick="setIconType('emoji')">סמל</button><button class="${ic.type=='image'?'on':''}" onclick="setIconType('image')">תמונה שלי</button><button class="${ic.type=='none'?'on':''}" onclick="setIconType('none')">בלי</button></div>
+ <div class="seg"><button class="${ic.type=='kids'?'on':''}" onclick="setIconType('kids')">סמל שונה לכל תלמיד</button><button class="${ic.type=='emoji'?'on':''}" onclick="setIconType('emoji')">סמל אחד לכיתה</button><button class="${ic.type=='image'?'on':''}" onclick="setIconType('image')">תמונה שלי</button><button class="${ic.type=='none'?'on':''}" onclick="setIconType('none')">בלי</button></div>
  ${ic.type=='emoji'?`<div class="emojis">${EMOJIS.map(e=>`<button class="${ic.value==e?'on':''}" onclick="setEmoji('${e}')">${e}</button>`).join("")}</div>`:''}
+ ${ic.type=='kids'?kidIconsHtml(c):''}
  ${ic.type=='image'?`<div class="row" style="margin-bottom:10px">${ic.value?`<img class="imgprev" src="${ic.value}">`:''}<button class="btn sec" onclick="$('#imgIn').click()">🖼️ ${ic.value?'החלפת תמונה':'בחירת תמונה'}</button><input type="file" id="imgIn" accept="image/*" hidden></div><div class="hint">מומלץ תמונה פשוטה על רקע לבן או שקוף (PNG).</div>`:''}
  ${ic.type!='none'?`<div class="g2"><div class="f"><label>מיקום הסמל</label><select data-d="iconPos"><option value="right">מימין לשם</option><option value="left">משמאל לשם</option><option value="top">מעל השם</option></select></div>
  <div class="f"><label>גודל הסמל</label><input type="range" min="30" max="100" data-d="iconSize" value="${d.iconSize}"></div></div>`:''}
@@ -295,33 +298,44 @@ function pDesign(){const d=S.design,c=cls(),ic=c.icon||{type:"none"};
  <label class="check"><input type="checkbox" data-d="bold" ${d.bold?'checked':''}> כתב מודגש</label>
  <label class="check"><input type="checkbox" data-d="showClass" ${d.showClass?'checked':''}> להוסיף את שם הכיתה בשורה קטנה מתחת לשם</label>
  <label class="check"><input type="checkbox" data-d="border" ${d.border?'checked':''}> מסגרת סביב כל מדבקה</label>`}
-A[2]=()=>{document.querySelectorAll("[data-d]").forEach(i=>{const k=i.dataset.d;if(i.tagName=="SELECT")i.value=S.design[k];
+A[2]=()=>{document.querySelectorAll("[data-kid]").forEach(sel=>sel.onchange=()=>{const c=cls();c.kidIcons[c.students[+sel.dataset.kid]]=sel.value;save();schedulePreview()});
+ document.querySelectorAll("[data-d]").forEach(i=>{const k=i.dataset.d;if(i.tagName=="SELECT")i.value=S.design[k];
   i.oninput=i.onchange=()=>{S.design[k]=i.type=="checkbox"?i.checked:i.type=="range"?+i.value:i.value;save();schedulePreview()}});
  const ii=$("#imgIn");if(ii)ii.onchange=async e=>{const f=e.target.files[0];if(!f)return;cls().icon={type:"image",value:await shrinkImg(f,240)};save();renderPanel()}};
-function setIconType(t){const c=cls();c.icon={type:t,value:t=="emoji"?(c.icon&&c.icon.type=="emoji"?c.icon.value:"⭐"):(t=="image"&&c.icon&&c.icon.type=="image"?c.icon.value:"")};save();renderPanel();if(t=="image"&&!c.icon.value)setTimeout(()=>$("#imgIn").click(),50)}
+function setIconType(t){const c=cls();c.icon={type:t,value:t=="kids"?"":t=="emoji"?(c.icon&&c.icon.type=="emoji"?c.icon.value:"⭐"):(t=="image"&&c.icon&&c.icon.type=="image"?c.icon.value:"")};save();renderPanel();if(t=="image"&&!c.icon.value)setTimeout(()=>$("#imgIn").click(),50)}
+function kidIcon(c,name){c.kidIcons=c.kidIcons||{};
+ if(!c.kidIcons[name]){const used=new Set(Object.values(c.kidIcons));const i=c.students.indexOf(name);
+  c.kidIcons[name]=KID_EMOJIS.find((e,j)=>!used.has(e)&&j>=Math.max(0,i)%KID_EMOJIS.length)||KID_EMOJIS.find(e=>!used.has(e))||KID_EMOJIS[Math.max(0,i)%KID_EMOJIS.length]}
+ return c.kidIcons[name]}
+function kidIconsHtml(c){c.students.forEach(n=>kidIcon(c,n));save();
+ return `<div class="hint">כל תלמיד מקבל סמל משלו, אותו סמל בכל הסבבים. אפשר להחליף סמל ליד כל שם.</div>
+ <div class="studlist" style="max-height:260px;margin-bottom:10px">${c.students.map((n,i)=>`<label style="justify-content:space-between"><span>${esc(n)}</span>
+ <select data-kid="${i}" style="width:auto;font-size:20px;padding:2px 6px">${KID_EMOJIS.map(e=>`<option ${c.kidIcons[n]==e?'selected':''}>${e}</option>`).join("")}</select></label>`).join("")||'<span style="color:var(--mute)">אין תלמידים בכיתה</span>'}</div>
+ <button class="btn ghost" style="margin-bottom:12px" onclick="cls().kidIcons={};save();renderPanel()">🔀 חלוקה מחדש של הסמלים</button>`}
 function setEmoji(e){cls().icon={type:"emoji",value:e};save();renderPanel()}
 function shrinkImg(f,max){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/png"))};im.onerror=no;im.src=r.result};r.readAsDataURL(f)})}
 
 // ---------- 4. הדפסה ----------
 // כמה פעמים עוברים על כל הכיתה (סבבים). אוטומטי = ממלאים את כל הדף
+function roundsUsed(){const n=selStudents().length;if(!n)return 0;if(S.print.each>0)return S.print.each;const rl=Math.ceil(n/Math.max(1,S.sheet.cols))*S.sheet.cols;return Math.max(1,Math.floor(S.sheet.count/rl)||1)}
 function rounds(){const n=selStudents().length,per=S.sheet.count;return S.print.each>0?S.print.each:Math.max(1,Math.ceil(per/Math.max(1,n)))}
 function perStudent(){return rounds()}
 function pPrint(){const p=S.print,c=cls(),per=S.sheet.count;
  const studs=selStudents();const pages=buildPages();const each=perStudent();
- const used=p.each>0?studs.length*p.each:per,sheets=Math.ceil(used/per)||0;
+ const sheets=pages.filter(x=>!x.labels.some(l=>l&&l.general)).length,used=sheets*per;
  return `<h3>הדפסה – ${esc(c.name)}</h3>
  <div class="chips">${S.classes.map(k=>`<button class="chip ${k.id==c.id?'on':''}" onclick="S.cur='${k.id}';S.print.only=null;save();renderPanel()">${esc(k.name)}</button>`).join("")}</div>
- <div class="note n-info">📄 השמות מודפסים <b>לפי סדר הכיתה, וחוזרים שוב ושוב</b>: יוסף, משה, אברהם… ובסוף הרשימה מתחילים שוב מהראשון.</div>
- <div class="g2"><div class="f"><label>כמה פעמים לעבור על כל הכיתה?</label><select id="pEach"><option value="0">אוטומטי – למלא את כל הדף</option>${[1,2,3,4,5,6,8,10,12,15,20].map(n=>`<option value="${n}">${n} ${n==1?"פעם":"פעמים"}</option>`).join("")}</select></div>
- <div class="f"><label>מדבקות שנשארות פנויות</label><select id="pFill"><option value="blank">להשאיר ריקות</option><option value="continue">להמשיך את הסבב</option><option value="class">שם הכיתה</option><option value="icon">רק הסמל</option></select></div></div>
+ <div class="note n-info">📄 השמות מודפסים <b>לפי סדר הכיתה, וחוזרים שוב ושוב</b>. כל סבב חדש מתחיל בשורה חדשה.</div>
+ <div class="g2"><div class="f"><label>כמה פעמים לעבור על כל הכיתה?</label><select id="pEach"><option value="0">אוטומטי – כמה שנכנס בדף</option>${[1,2,3,4,5,6,8,10,12,15,20].map(n=>`<option value="${n}">${n} ${n==1?"פעם":"פעמים"}</option>`).join("")}</select></div>
+ <div class="f"><label>מדבקות שנשארות פנויות</label><select id="pFill"><option value="blank">להשאיר ריקות</option><option value="class">שם הכיתה</option><option value="icon">רק הסמל</option></select></div></div>
  <div class="g2"><div class="f"><label>דפים כלליים נוספים</label><input type="number" min="0" max="50" step="1" id="pGen" value="${p.general}"></div>
  <div class="f"><label>מה כתוב בדפים הכלליים</label><select id="pGenType"><option value="class">שם הכיתה</option><option value="custom">טקסט שלי</option><option value="blank">רק הסמל (בלי טקסט)</option></select></div></div>
  ${p.generalType=='custom'?`<div class="f"><label>הטקסט לדפים הכלליים</label><input id="pGenText" value="${esc(p.generalText)}" placeholder="לדוגמה: ספריית הכיתה"></div>`:''}
  <details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">בחירת תלמידים מסוימים (${studs.length} מתוך ${c.students.length})</summary>
  <div class="row" style="margin:8px 0"><button class="btn ghost" onclick="S.print.only=null;save();renderPanel()">כולם</button><button class="btn ghost" onclick="S.print.only=[];save();renderPanel()">אף אחד</button></div>
  <div class="studlist">${c.students.map((n,i)=>`<label><input type="checkbox" data-i="${i}" ${studs.includes(n)?'checked':''}> ${esc(n)}</label>`).join("")||'<span style="color:var(--mute)">אין תלמידים בכיתה</span>'}</div></details>
- <div class="stat"><div><b>${studs.length}</b>תלמידים</div><div><b>${p.each>0?each:Math.floor(per/Math.max(1,studs.length))+"–"+Math.ceil(per/Math.max(1,studs.length))}</b>מדבקות לכל תלמיד</div><div><b>${pages.length}</b>דפים להדפסה</div></div>
- ${sheets>1?`<div class="note n-warn">${used} מדבקות, ובדף יש ${per}, ולכן יודפסו ${sheets} דפים. כדי להיכנס בדף אחד אפשר לבחור פחות סבבים.</div>`:''}
+ <div class="stat"><div><b>${studs.length}</b>תלמידים</div><div><b>${roundsUsed()}</b>סבבים</div><div><b>${pages.length}</b>דפים להדפסה</div></div>
+ ${sheets>1?`<div class="note n-warn">הסבבים שבחרת לא נכנסים בדף אחד, ולכן יודפסו ${sheets} דפים. כדי להיכנס בדף אחד בוחרים "אוטומטי" או פחות סבבים.</div>`:''}
  <div class="row" style="margin-top:8px"><button class="btn big" onclick="doPDF()" ${pages.length?'':'disabled'}>📄 הורדת PDF</button><button class="btn big sec" onclick="doPrint()" ${pages.length?'':'disabled'}>🖨️ הדפסה ישירה</button></div>
  <div id="progBox" style="display:none"><div class="prog"><div id="prog"></div></div><div id="progTxt" class="hint"></div></div>
  <div class="note n-warn" style="margin-top:14px">🖨️ <b>חשוב להדפסה מדויקת:</b> בחלון ההדפסה בוחרים גודל <b>"גודל בפועל" / 100%</b>, ולא "התאם לדף". נייר A4, בלי שוליים נוספים.</div>
@@ -341,21 +355,26 @@ function selStudents(){const c=cls();return S.print.only?c.students.filter(n=>S.
 
 // ===================== בניית הדפים =====================
 function buildPages(){
- const c=cls(),per=S.sheet.count,p=S.print,studs=selStudents(),sub=S.design.showClass?c.name:"";
+ const c=cls(),per=S.sheet.count,cols=Math.max(1,S.sheet.cols),p=S.print,studs=selStudents(),sub=S.design.showClass?c.name:"";
  const gText=p.generalType=="class"?c.name:p.generalType=="custom"?p.generalText:"";
  const pages=[];
  if(per<1||(!studs.length&&!p.general))return pages;
- // סבבים: כל הכיתה לפי הסדר, ושוב מההתחלה
- const all=[];
- if(studs.length){
-  const total=p.each>0?studs.length*p.each:per;   // אוטומטי = דף אחד מלא
-  for(let i=0;i<total;i++)all.push({text:studs[i%studs.length],sub});
+ // סבבים: כל הכיתה לפי הסדר; כל סבב חדש מתחיל בתחילת שורה
+ const all=[],n=studs.length;
+ if(n){
+  const roundLen=Math.ceil(n/cols)*cols;             // סבב אחד כולל השלמה לסוף השורה
+  const want=p.each>0?p.each:Math.max(1,Math.floor(per/roundLen)||1);   // אוטומטי = כמה סבבים שלמים שנכנסים בדף
+  for(let r=0;r<want;r++){
+   // אם הסבב לא נכנס בשארית הדף – מתחילים אותו בדף חדש
+   const posInPage=all.length%per;
+   if(posInPage&&posInPage+roundLen>per&&roundLen<=per)while(all.length%per)all.push(null);
+   studs.forEach(nm=>all.push({text:nm,sub,kid:nm}));
+   while(all.length%cols)all.push(null);
+  }
  }
  for(let i=0;i<all.length;i+=per){
   const labels=all.slice(i,i+per);
-  if(labels.length<per&&p.fill!="blank"){
-   if(p.fill=="continue"){while(labels.length<per){labels.push({text:studs[(i+labels.length)%studs.length],sub})}}
-   else{const f={text:p.fill=="class"?c.name:"",sub:""};while(labels.length<per)labels.push(f)}}
+  if(p.fill!="blank"){const f={text:p.fill=="class"?c.name:"",sub:""};for(let j=0;j<per;j++)if(!labels[j])labels[j]=f}
   pages.push({title:`${c.name}${all.length>per?` – דף ${pages.length+1}`:''}`,labels})}
  for(let g=0;g<p.general;g++)pages.push({title:`כללי ${g+1}`,labels:Array(per).fill({text:gText,sub:gText&&S.design.showClass&&p.generalType!="class"?c.name:"",general:true})});
  return pages}
@@ -406,6 +425,9 @@ function drawLabel(ctx,x,y,w,h,item,icon,outline){
  fit.lines.forEach((l,i)=>ctx.fillText(l,ix+iw/2,ty+lh*i+lh/2));
  if(item.sub){const ss=Math.min(subH*0.8,fit.size*0.55);ctx.font=`400 ${ss}px "${fam}"`;ctx.globalAlpha=.75;ctx.fillText(item.sub,ix+iw/2,ty+fit.lines.length*lh+subH/2)}
  ctx.restore()}
+function itemIcon(item,icon){if(!icon||icon.type!="kids")return icon;
+ if(item.kid)return {type:"emoji",value:kidIcon(cls(),item.kid)};
+ return item.text?{type:"none"}:{type:"emoji",value:"⭐"}}
 function renderPage(canvas,dpi,page,outline){
  const s=S.sheet,k=dpi/2.54,W=Math.round(21*k),H=Math.round(29.7*k);
  canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d");
@@ -414,7 +436,7 @@ function renderPage(canvas,dpi,page,outline){
  // גודל כתב אחיד לכל השמות בדף: לפי השם הארוך ביותר
  UNI=0;if(!outline){MEASURE=true;const seen={};let mn=1e9;
   (page.labels||[]).forEach(it=>{if(!it||!it.text||seen[it.text+"|"+it.sub])return;seen[it.text+"|"+it.sub]=1;
-   const v=drawLabel(ctx,0,0,s.w*k,s.h*k,it,icon,false);if(typeof v=="number")mn=Math.min(mn,v)});
+   const v=drawLabel(ctx,0,0,s.w*k,s.h*k,it,itemIcon(it,icon),false);if(typeof v=="number")mn=Math.min(mn,v)});
   MEASURE=false;UNI=mn<1e9?mn:0;ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H)}
  let i=0;
  for(let r=0;r<s.rows;r++)for(let c=0;c<s.cols;c++){
@@ -423,7 +445,7 @@ function renderPage(canvas,dpi,page,outline){
   if(i>=s.count)break;
   const item=page.labels[i++];
   if(outline)drawLabel(ctx,x,y,s.w*k,s.h*k,{},null,true);
-  else if(item)drawLabel(ctx,x,y,s.w*k,s.h*k,item,icon,false);
+  else if(item)drawLabel(ctx,x,y,s.w*k,s.h*k,item,itemIcon(item,icon),false);
  }
  if(outline){ctx.fillStyle="#d33";ctx.font=`600 ${0.35*k}px Assistant`;ctx.textAlign="center";ctx.direction="rtl";
   ctx.fillText("דף בדיקת יישור – מניחים על דף המדבקות מול האור ובודקים שהמסגרות מתאימות",W/2,H-0.5*k)}
