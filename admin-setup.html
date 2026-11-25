@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ניהול הרשמה וקופונים – מדריך למנהל</title>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2a37;--mute:#5f6b7a;--line:#e3e7ed;--pri:#1d5fa8;--pri2:#e7f0fb;--warnb:#fdf3e2;--warn:#8a4f06;--okb:#e7f6ec;--ok:#166534}
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;color:var(--ink);background:#f3f5f8;font-size:17px;line-height:1.75}
+main{max-width:860px;margin:0 auto;padding:28px 22px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:16px}
+h1{font-size:28px;margin:0 0 6px} h2{font-size:21px;margin:0 0 8px;color:var(--pri)}
+.step{display:flex;gap:16px}
+.step .n{flex:none;width:38px;height:38px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-weight:800;font-size:18px}
+.step h2{margin:4px 0 6px;color:var(--ink);font-size:20px}
+code,kbd{background:#eef1f5;padding:1px 7px;border-radius:5px;font-size:15px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:9px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;margin:4px 0 4px 6px}
+.tip{background:var(--warnb);color:var(--warn);border-radius:10px;padding:10px 14px;margin:8px 0;font-size:16px}
+.good{background:var(--okb);color:var(--ok);border-radius:10px;padding:10px 14px;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:15.5px;margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:right;vertical-align:top}
+th{background:#f6f8fb}
+.toast{position:fixed;bottom:20px;left:20px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.25s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<main>
+<div class="card">
+<h1>🔑 הרשמה עם קוד קופון – מדריך למנהל</h1>
+<p>בזכות מערכת ההרשמה אפשר לתת את המערכת לאנשים נוספים: <b>רק מי שקיבל ממך קוד קופון יכול להירשם</b>. הכניסה עצמה נעשית עם קוד חד-פעמי שנשלח למייל, בלי סיסמאות.</p>
+<p>השרת הוא Google Apps Script <b>בחשבון ה-Google שלך</b>. המיילים יוצאים מהחשבון שלך, ורשימת המשתמשים והקופונים נשמרת בגיליון שלך. אין עלות.</p>
+<p id="status"></p>
+</div>
+
+<div class="card step"><div class="n">1</div><div>
+<h2>יוצרים גיליון ופותחים את עורך הסקריפט</h2>
+<p>פותחים <a href="https://sheets.new" target="_blank">sheets.new</a> ומשנים את השם ל<b>"שרת מערכת המזכירות"</b>. אחר כך בתפריט: <b>תוספים ← Apps Script</b>.</p>
+</div></div>
+
+<div class="card step"><div class="n">2</div><div>
+<h2>מדביקים את הקוד</h2>
+<p>מוחקים את כל מה שכתוב ב-<code>Code.gs</code>, מדביקים את הקוד ושומרים (<kbd>Ctrl</kbd>+<kbd>S</kbd>):</p>
+<button class="btn" onclick="copyFile('server/Server.gs')">📋 העתקת קוד השרת</button>
+<p>אחר כך: ⚙️ <b>הגדרות הפרויקט</b>. בשדה אזור זמן בוחרים <b>Jerusalem</b>.</p>
+</div></div>
+
+<div class="card step"><div class="n">3</div><div>
+<h2>התקנה ראשונית ובדיקת מייל</h2>
+<p>חוזרים לגיליון ומרעננים (<kbd>F5</kbd>). מופיע תפריט <b>🔑 מערכת הרשמה</b>. לוחצים <b>התקנה ראשונית</b> ומאשרים הרשאות.</p>
+<div class="tip">⚠ תופיע הודעה ש-"Google לא אימתה את האפליקציה". זה תקין, כי זו אפליקציה שלך. לוחצים <b>מתקדם</b>, אחר כך <b>מעבר אל … (לא בטוח)</b>, ובסוף <b>אישור</b>.</div>
+<p>אחר כך לוחצים <b>שליחת מייל בדיקה אליי</b>. <b>אם הגיע מייל עם קוד, החיבור למייל תקין.</b></p>
+</div></div>
+
+<div class="card step"><div class="n">4</div><div>
+<h2>מפרסמים את השרת</h2>
+<ul>
+<li>ב-Apps Script לוחצים <b>פריסה ← פריסה חדשה ← ⚙️ ← אפליקציית אינטרנט</b>.</li>
+<li>בשדה "הפעלה בתור" בוחרים <b>אני</b>. בשדה "למי יש גישה" בוחרים <b>כל אחד</b>, כדי שהאתר יוכל לפנות לשרת. המידע עצמו מוגן בקודים.</li>
+<li>לוחצים <b>פריסה</b> ומעתיקים את <b>הקישור של אפליקציית האינטרנט</b>. הוא מתחיל ב-<code dir="ltr">https://script.google.com/macros/s/</code></li>
+</ul>
+</div></div>
+
+<div class="card step"><div class="n">5</div><div>
+<h2>מחברים את האתר לשרת</h2>
+<p>שולחים לי את הקישור, ואני מכניס אותו לקובץ <code>config.js</code> באתר. אפשר גם לבד: בגיטהאב פותחים את <code>config.js</code>, לוחצים ✏️, מדביקים את הקישור בין המירכאות של <code>API_URL</code>, ושומרים (Commit).</p>
+<div class="good">✔ מהרגע הזה, מי שנכנס לאתר רואה מסך כניסה. מי שאין לו קופון לא יכול להירשם.</div>
+</div></div>
+
+<div class="card">
+<h2>ניהול יומיומי – הכול בגיליון</h2>
+<table>
+<tr><th style="width:30%">מה רוצים</th><th>איך</th></tr>
+<tr><td>לתת גישה לאדם חדש</td><td>בתפריט <b>🔑 מערכת הרשמה ← יצירת קוד קופון חדש</b>. שולחים לו את הקוד יחד עם הקישור לאתר.</td></tr>
+<tr><td>ימי ניסיון</td><td>בעמודה "ימי גישה" של הקופון כותבים מספר, למשל 14. הגישה תיגמר לבד אחרי 14 יום.</td></tr>
+<tr><td>קופון לכמה אנשים</td><td>בעמודה "מקסימום שימושים" כותבים מספר, למשל 20. הקופון <code>NISAYON14</code> הוא דוגמה כזו.</td></tr>
+<tr><td>הארכה אחרי תשלום</td><td>בלשונית "משתמשים" משנים את "בתוקף עד" לתאריך החדש. בעמודה "הערות תשלום" אפשר לרשום מה שולם.</td></tr>
+<tr><td>לחסום מישהו</td><td>בלשונית "משתמשים" משנים את הסטטוס ל"חסום". הוא ייחסם תוך 6 שעות לכל המאוחר.</td></tr>
+<tr><td>לבטל קופון</td><td>בלשונית "קופונים" משנים את "פעיל" ל"לא".</td></tr>
+<tr><td>לדעת מי נרשם</td><td>על כל הרשמה חדשה מגיע אליך מייל, וכל פעולה נרשמת בלשונית "יומן".</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>לא חובה: קריאה אוטומטית של טפסים סרוקים</h2>
+<p>במודול רישום התלמידים המערכת יכולה לקרוא טופס בכתב יד ולמלא את השדות לבד. באתר הרגיל זה דורש מפתח API של Anthropic, בתשלום לפי שימוש, בערך כמה אגורות לטופס. פותחים חשבון ב-<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, יוצרים מפתח, ובגיליון בוחרים <b>🔑 מערכת הרשמה ← הגדרת מפתח לקריאת טפסים</b>.</p>
+<p>בלי מפתח, מקלידים את פרטי הטופס מול התמונה הסרוקה. כל השאר עובד כרגיל.</p>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+document.getElementById("status").innerHTML=Auth.enabled?'<span style="color:#166534;font-weight:700">✔ האתר מחובר לשרת ההרשמה.</span>':'<span style="color:#8a4f06;font-weight:700">⏳ האתר עדיין לא מחובר לשרת. כרגע הוא פתוח לכולם, בלי מסך כניסה.</span>';
+async function copyFile(path){const t=document.getElementById('toast');
+ try{const txt=await (await fetch(path,{cache:'no-store'})).text();await navigator.clipboard.writeText(txt);t.textContent='✔ הקוד הועתק – מדביקים ב-Apps Script (Ctrl+V)'}
+ catch(e){t.textContent='ההעתקה לא הצליחה – פתחו את הקובץ server/Server.gs בגיטהאב והעתיקו משם'}
+ t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)}
+</script>
+</body>
+</html>

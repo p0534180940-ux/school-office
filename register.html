@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>רישום תלמידים – מערכת המזכירות</title>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Amatic+SC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1f2a37;--mute:#6b7280;--line:#e5e7eb;--pri:#1e4e8c;--pri2:#e8f0fb;--ok:#15803d;--okb:#e7f6ec;--warn:#b45309;--warnb:#fdf3e2;--bad:#b91c1c;--badb:#fde8e8}
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 40px)}
+aside{background:var(--pri);color:#fff;padding:20px 14px;position:sticky;top:0;height:calc(100vh - 40px);overflow:auto}
+aside h1{font-size:20px;margin:0 6px 4px}
+aside small{opacity:.75;margin:0 6px;display:block;margin-bottom:22px}
+nav button{display:flex;gap:10px;align-items:center;width:100%;background:none;border:0;color:#fff;font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:right;opacity:.85}
+nav button:hover{background:rgba(255,255,255,.1);opacity:1}
+nav button.on{background:#fff;color:var(--pri);opacity:1;font-weight:700}
+main{padding:26px 32px;max-width:1150px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.top h2{margin:0;font-size:26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+.card h3{margin:0 0 12px;font-size:18px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)}
+.stat .n{font-size:32px;font-weight:800;color:var(--pri)} .stat .l{color:var(--mute)}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn.sec{background:var(--pri2);color:var(--pri)} .btn.sm{padding:5px 10px;font-size:14px}
+.btn.ghost{background:none;color:var(--mute);border:1px solid var(--line)}
+label{display:block;font-size:14px;color:var(--mute);margin-bottom:4px;font-weight:600}
+input,select,textarea{width:100%;font:inherit;padding:9px 10px;border:1px solid #cfd5dd;border-radius:8px;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid #9bbbe6;border-color:var(--pri)}
+.field{margin-bottom:12px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line);font-size:15px}
+th{color:var(--mute);font-weight:600;font-size:14px;background:#fafbfc}
+tr:hover td{background:#fafcff}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:13px;font-weight:600}
+.t-ok{background:var(--okb);color:var(--ok)} .t-warn{background:var(--warnb);color:var(--warn)} .t-bad{background:var(--badb);color:var(--bad)} .t-info{background:var(--pri2);color:var(--pri)}
+.steps{display:flex;gap:8px;margin-bottom:18px}
+.steps div{flex:1;padding:9px;border-radius:8px;background:#eef1f5;color:var(--mute);text-align:center;font-weight:600;font-size:14px}
+.steps div.on{background:var(--pri);color:#fff} .steps div.done{background:var(--okb);color:var(--ok)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--mute)}
+.task{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.task.done span{text-decoration:line-through;color:var(--mute)}
+.task input{width:auto}
+.att button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 10px;font:inherit;cursor:pointer;font-size:14px}
+.att button.p.on{background:var(--okb);color:var(--ok);border-color:var(--ok)}
+.att button.a.on{background:var(--badb);color:var(--bad);border-color:var(--bad)}
+.att button.l.on{background:var(--warnb);color:var(--warn);border-color:var(--warn)}
+.doc{border:1px solid var(--line);padding:34px;border-radius:8px;background:#fffefb;line-height:1.9;min-height:300px}
+.doc h4{text-align:center;font-size:20px;margin:0 0 4px}
+.toast{position:fixed;bottom:22px;left:22px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:8}
+.modal.show{display:flex}
+.modal .card{width:min(560px,92vw);max-height:85vh;overflow:auto}
+.spec h4{margin:16px 0 6px;color:var(--pri)} .spec ul{margin:0;padding-right:20px;line-height:1.8}
+.banner{background:var(--warnb);color:var(--warn);padding:8px 14px;border-radius:8px;font-size:14px;margin-bottom:16px}
+.hero{background:linear-gradient(135deg,#1e4e8c,#2f6fbf);color:#fff;border:0;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero h3{color:#fff;font-size:21px;margin:0 0 4px}.hero p{margin:0;opacity:.9}
+.hero .btn{background:#fff;color:var(--pri);margin-right:auto;font-size:17px;padding:11px 20px}
+.flow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.flow div{flex:1;min-width:150px;background:var(--pri2);border-radius:10px;padding:12px;text-align:center;font-weight:600;color:var(--pri)}
+.flow div span{display:block;font-size:26px}
+.flow b{align-self:center;color:var(--mute);font-size:20px}
+.drop{border:2px dashed #9bbbe6;border-radius:12px;padding:26px;text-align:center;background:#f8fbff;cursor:pointer;display:block;transition:.15s}
+.drop:hover,.drop.over{background:var(--pri2);border-color:var(--pri)}
+.drop input{display:none}
+.qi{display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.qi:hover{background:#f6f8fb}.qi.sel{border-color:var(--pri);background:var(--pri2)}
+.qi img{width:46px;height:60px;object-fit:cover;border:1px solid var(--line);border-radius:4px;background:#fff}
+.qi .nm{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.review{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.scanimg{border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:640px;background:#eef1f5}
+.scanimg img{width:100%;display:block;cursor:zoom-in}.scanimg.zoom img{width:200%;cursor:zoom-out}
+.unsure input,.unsure select{background:#fff8db;border-color:#e0b100}
+.unsure label::after{content:" ⚠ לבדוק";color:var(--warn)}
+.vbox div{padding:6px 10px;border-radius:6px;margin-bottom:6px;font-size:14px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #b8c7dc;border-top-color:var(--pri);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:1000px){.review{grid-template-columns:1fr}}
+@media(max-width:800px){.app{grid-template-columns:1fr}aside{position:static;height:auto}nav{display:flex;flex-wrap:wrap}nav button{width:auto}.g4,.g3,.g2{grid-template-columns:1fr 1fr}main{padding:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>🏫 מזכירות</h1>
+  <small>רישום וניהול תלמידים</small>
+  <nav id="nav"></nav>
+</aside>
+<main id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="card" id="modalBody"></div></div>
+
+<script>
+// ---------- נתונים לדוגמה ----------
+const CLASSES=["א'1","א'2","ב'1","ב'2","ג'1","ד'1","ה'1","ו'1","ז'1","ח'1"];
+let S={
+  students:[
+    {id:1,fn:"יוסף",ln:"כהן",tz:"312456781",cls:"ג'1",father:"אברהם כהן",phone:"050-4123456",addr:"רח' הרב קוק 12",status:"פעיל",paid:true,docs:true,date:"2026-08-20"},
+    {id:2,fn:"משה",ln:"לוי",tz:"318654220",cls:"ג'1",father:"יעקב לוי",phone:"052-7654321",addr:"רח' חזון איש 4",status:"פעיל",paid:false,docs:true,date:"2026-08-22"},
+    {id:3,fn:"שמואל",ln:"פרידמן",tz:"329871654",cls:"א'1",father:"דוד פרידמן",phone:"053-3141592",addr:"רח' רבי עקיבא 88",status:"ממתין לאישור",paid:false,docs:false,date:"2026-11-10"},
+    {id:4,fn:"אליהו",ln:"גולדשטיין",tz:"301122334",cls:"ה'1",father:"מנחם גולדשטיין",phone:"054-8899001",addr:"רח' סוקולוב 3",status:"פעיל",paid:true,docs:true,date:"2026-08-18"},
+    {id:5,fn:"ישראל",ln:"ברגר",tz:"334455667",cls:"א'2",father:"חיים ברגר",phone:"050-1112233",addr:"רח' השלום 7",status:"ממתין לאישור",paid:true,docs:false,date:"2026-11-14"},
+    {id:6,fn:"נחמן",ln:"רוזנברג",tz:"345566778",cls:"ח'1",father:"שלמה רוזנברג",phone:"058-4455667",addr:"רח' ירושלים 21",status:"פעיל",paid:true,docs:true,date:"2026-08-25"},
+    {id:7,fn:"אהרן",ln:"קליין",tz:"356677889",cls:"ג'1",father:"בנימין קליין",phone:"052-9988776",addr:"רח' הרצל 15",status:"פעיל",paid:false,docs:true,date:"2026-08-30"},
+  ],
+  tasks:[
+    {t:"להכין רשימות כיתה לטיול ג'",done:false,due:"2026-11-19"},
+    {t:"לשלוח תזכורת תשלום שכר לימוד",done:false,due:"2026-11-18"},
+    {t:"להזמין ציוד משרדי (דפים, טונר)",done:true,due:"2026-11-15"},
+    {t:"לתאם אסיפת הורים כיתות א'",done:false,due:"2026-11-24"},
+  ],
+  events:[
+    {d:"2026-11-20",t:"אסיפת הורים – כיתות א'-ב'"},
+    {d:"2026-11-26",t:"מבחן חודשי בכיתות ה'-ח'"},
+    {d:"2026-12-04",t:"טיול שנתי כיתות ג'"},
+    {d:"2026-12-15",t:"חופשת חנוכה מתחילה"},
+  ],
+  msgs:[{to:"הורי כיתה ג'1",txt:"תזכורת: מחר טיול, יש להגיע עם כובע ובקבוק מים.",d:"2026-11-16"}],
+  att:{}, nextId:8
+};
+try{const s=localStorage.getItem("schoolOffice");if(s)S=JSON.parse(s)}catch(e){}
+const save=()=>{try{localStorage.setItem("schoolOffice",JSON.stringify(S))}catch(e){}};
+const today="2026-11-17";
+const $=s=>document.querySelector(s);
+const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)};
+const fmt=d=>d.split("-").reverse().join("/");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const PAGES=[
+ ["home","📊","לוח בקרה"],["scan","📥","קליטת טפסים"],["reg","📝","רישום ידני"],["students","👥","תלמידים"],
+ ["att","✅","נוכחות"],["docs","📄","אישורים ומסמכים"],["msgs","✉️","הודעות להורים"],
+ ["tasks","📋","משימות ויומן"]];
+let page=location.hash.slice(1)||"home";
+function nav(){ $("#nav").innerHTML=PAGES.map(p=>`<button class="${p[0]==page?'on':''}" onclick="go('${p[0]}')">${p[1]} ${p[2]}</button>`).join("") }
+function go(p){page=p;try{location.hash=p}catch(e){}render()}
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(h&&h!==page){page=h;render()}});
+function render(){nav();$("#main").innerHTML=(V[page]||V.home)();window.scrollTo(0,0);if(A[page])A[page]()}
+const hdr=(t,extra="")=>`<div class="top"><h2>${t}</h2><div class="row">${extra}</div></div>`;
+const stTag=s=>s=="פעיל"?`<span class="tag t-ok">פעיל</span>`:s=="ממתין לאישור"?`<span class="tag t-warn">ממתין לאישור</span>`:`<span class="tag t-bad">${s}</span>`;
+
+const V={}, A={};
+// ---------- לוח בקרה ----------
+V.home=()=>{
+ const st=S.students, pend=st.filter(x=>x.status=="ממתין לאישור"), unpaid=st.filter(x=>!x.paid), open=S.tasks.filter(t=>!t.done);
+ return hdr("שלום, ברוכים הבאים 👋",`<span class="muted">יום ג', ${fmt(today)}</span>`)+
+ `<div class="banner">הנתונים נשמרים רק בדפדפן הזה (במחשב הזה). בהתחלה מופיעים נתוני דוגמה.</div>
+ <div class="card hero"><div style="font-size:44px">📥</div><div><h3>קליטת טפסי רישום מנייר</h3><p>ההורים ממלאים טופס בכתב יד – סורקים או מצלמים, והמערכת מקלידה את הפרטים לבד. נשאר רק לאשר.</p>
+ ${S.scanned?`<p style="margin-top:6px"><b>${S.scanned}</b> טפסים נקלטו עד כה</p>`:''}</div><button class="btn" onclick="go('scan')">לקליטת טפסים ←</button></div>
+ <div class="grid g4">
+  <div class="card stat"><div class="n">${st.length}</div><div class="l">תלמידים רשומים</div></div>
+  <div class="card stat"><div class="n">${pend.length}</div><div class="l">בקשות רישום ממתינות</div></div>
+  <div class="card stat"><div class="n">${unpaid.length}</div><div class="l">חובות שכר לימוד</div></div>
+  <div class="card stat"><div class="n">${open.length}</div><div class="l">משימות פתוחות</div></div>
+ </div>
+ <div class="grid g2">
+  <div class="card"><h3>בקשות רישום ממתינות</h3>
+   ${pend.length?`<table>${pend.map(s=>`<tr><td>${s.fn} ${s.ln}</td><td>${s.cls}</td><td>${s.docs?'':'<span class="tag t-warn">חסרים מסמכים</span>'}</td><td><button class="btn sm" onclick="approve(${s.id})">אישור</button></td></tr>`).join("")}</table>`:'<p class="muted">אין בקשות ממתינות 🎉</p>'}
+  </div>
+  <div class="card"><h3>אירועים קרובים</h3>
+   <table>${S.events.slice().sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4).map(e=>`<tr><td style="width:100px"><b>${fmt(e.d)}</b></td><td>${e.t}</td></tr>`).join("")}</table>
+  </div>
+ </div>
+ <div class="card"><h3>משימות להיום והקרובות</h3>${open.slice(0,4).map(t=>`<div class="task"><span>${t.t}</span><span class="muted" style="margin-right:auto">${fmt(t.due)}</span></div>`).join("")}
+  <div style="margin-top:12px" class="row"><button class="btn" onclick="go('reg')">+ רישום תלמיד חדש</button><button class="btn sec" onclick="go('att')">סימון נוכחות</button><button class="btn sec" onclick="go('docs')">הפקת אישור לימודים</button></div></div>`;
+};
+function approve(id){const s=S.students.find(x=>x.id==id);s.status="פעיל";save();toast(`הרישום של ${s.fn} ${s.ln} אושר`);render()}
+
+// ---------- קליטת טפסים סרוקים ----------
+const PAYS=["הוראת קבע","כרטיס אשראי","המחאות","מזומן במשרד"];
+const FF=[["fn","שם פרטי *"],["ln","שם משפחה *"],["tz","מספר זהות *"],["dob","תאריך לידה"],["cls","כיתה מבוקשת *"],["prev","מוסד לימודים קודם"],
+ ["father","שם האב *"],["mother","שם האם"],["phone","טלפון ראשי *"],["phone2","טלפון נוסף"],["addr","כתובת"],["email","דוא\"ל"],["pay","אמצעי תשלום"],["notes","הערות"]];
+function tzOk(t){t=String(t||"").replace(/\D/g,"");if(t.length<5||t.length>9)return false;t=t.padStart(9,"0");let s=0;for(let i=0;i<9;i++){let d=+t[i]*((i%2)+1);s+=d>9?d-9:d}return s%10==0}
+let Q=[],cur=null,busy=false,AI=null,DL=null,aiState="checking",qid=1;
+(async()=>{
+ try{if(window.claude&&claude.use){[AI,DL]=await Promise.all([claude.use("sample"),claude.use("downloads")])}}catch(e){}
+ // באתר הרגיל: קריאת טפסים דרך שרת המערכת (אם בעל המערכת הפעיל אותה), והורדות רגילות
+ if(!AI&&window.Auth&&Auth.enabled){try{await Auth.ready;if(Auth.ai){AI=async(prompt,opt)=>{const b=opt.images[0];const b64=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.readAsDataURL(b)});
+   const r=await Auth.api("extract",{token:Auth.token(),image:b64,mediaType:b.type||"image/jpeg",prompt});if(!r.ok)throw{message:r.error};return{text:r.text}}}}catch(e){}}
+ if(!DL)DL={save:async({filename,data})=>{const a=document.createElement("a");a.href=URL.createObjectURL(data);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);return{status:"saved"}}};
+ aiState=AI?"on":"off";const el=document.getElementById("aiState");if(el)el.outerHTML=aiBadge();})();
+const aiBadge=()=>`<span id="aiState" class="tag ${aiState=="on"?"t-ok":aiState=="off"?"t-warn":"t-info"}">${aiState=="on"?"✓ פענוח אוטומטי פעיל":aiState=="off"?"קריאה אוטומטית לא הופעלה – טפסי הדוגמה עובדים, ואת השאר מקלידים מול התמונה":"בודק זמינות פענוח…"}</span>`;
+
+V.scan=()=>hdr("קליטת טפסי רישום",`<button class="btn sec" id="blankDl" onclick="blankForm()">📄 טופס ריק להדפסה</button><button class="btn sec" onclick="demoForms()">🧪 נסו עם 2 טפסים לדוגמה</button>`)+
+ `<div class="card"><div class="flow"><div><span>✍️</span>ההורים ממלאים טופס נייר</div><b>←</b><div><span>📷</span>סורקים או מצלמים<br><small>אפשר ערימה שלמה בבת אחת</small></div><b>←</b><div><span>🤖</span>המערכת קוראת את כתב היד וממלאת את השדות</div><b>←</b><div><span>✅</span>המזכיר בודק ומאשר בלחיצה</div></div>
+ <div style="margin-top:12px">${aiBadge()}</div></div>
+ <div class="grid" style="grid-template-columns:290px 1fr;align-items:start">
+  <div><label class="drop" id="drop"><input type="file" id="fileIn" accept="image/*" multiple><div style="font-size:30px">📤</div><b>גררו לכאן סריקות או תמונות</b><div class="muted" style="font-size:14px">או לחצו לבחירה (JPG / PNG, כמה קבצים יחד)</div></label>
+   <div class="card" style="margin-top:14px;padding:10px"><div class="row" style="padding:4px 6px 8px"><b>תור טפסים</b><span class="muted" id="qcount" style="margin-right:auto"></span></div><div id="queue"></div></div></div>
+  <div class="card" id="reviewBox"></div>
+ </div>`;
+A.scan=()=>{
+ const fi=$("#fileIn"),dr=$("#drop");
+ fi.onchange=()=>{addFiles([...fi.files]);fi.value=""};
+ dr.ondragover=e=>{e.preventDefault();dr.classList.add("over")};dr.ondragleave=()=>dr.classList.remove("over");
+ dr.ondrop=e=>{e.preventDefault();dr.classList.remove("over");addFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")))};
+ drawQueue();drawReview();
+};
+const QS={wait:["בתור","t-info"],run:["מפענח…","t-info"],review:["לבדיקה","t-warn"],ok:["נקלט ✓","t-ok"],skip:["דולג","t-bad"]};
+function drawQueue(){const el=$("#queue");if(!el)return;
+ const n=Q.filter(x=>x.status=="review").length;$("#qcount").textContent=Q.length?`${n} לבדיקה מתוך ${Q.length}`:"";
+ el.innerHTML=Q.map(x=>`<div class="qi ${cur&&cur.id==x.id?'sel':''}" onclick="pick(${x.id})"><img src="${x.url}"><div><div class="nm">${x.data&&x.data.fn?esc(x.data.fn+" "+(x.data.ln||"")):esc(x.name)}</div>
+ <span class="tag ${QS[x.status][1]}">${x.status=="run"?'<span class="spin"></span> ':''}${QS[x.status][0]}</span>${x.unsure&&x.unsure.length&&x.status=="review"?` <span class="muted" style="font-size:13px">${x.unsure.length} לבדוק</span>`:''}</div></div>`).join("")||'<p class="muted" style="padding:6px">עדיין לא הועלו טפסים</p>'}
+function pick(id){const x=Q.find(q=>q.id==id);if(x.status=="wait"||x.status=="run"){toast("הטופס עדיין בפענוח");return}cur=x;drawQueue();drawReview()}
+function addFiles(files,demo){if(!files.length)return;
+ files.forEach((f,i)=>Q.push({id:qid++,name:f.name||("טופס "+qid),blob:f,url:URL.createObjectURL(f),status:"wait",demo:demo?demo[i]:null}));
+ drawQueue();process()}
+async function process(){if(busy)return;busy=true;
+ let x;while((x=Q.find(q=>q.status=="wait"))){x.status="run";drawQueue();
+  try{
+   if(AI){x.data=await extract(x)}
+   else if(x.demo){await new Promise(r=>setTimeout(r,1300));x.data={...x.demo};x.unsure=["phone2","prev"]}
+   else{x.data={};x.unsure=[];x.err="הפענוח האוטומטי לא זמין בתצוגה זו – אפשר להקליד את הפרטים מול התמונה."}
+  }catch(e){x.data=x.data||{};x.unsure=[];x.err="הפענוח נכשל ("+(e.message||e.code||"שגיאה")+") – אפשר להקליד ידנית מול התמונה.";if(e.code=="not_granted"){AI=null;aiState="off"}}
+  x.status="review";if(!cur||cur.status!="review"){cur=x;drawReview()}drawQueue()}
+ busy=false}
+async function shrink(blob){const bm=await createImageBitmap(blob);const k=Math.min(1,1600/Math.max(bm.width,bm.height));
+ const c=document.createElement("canvas");c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext("2d").drawImage(bm,0,0,c.width,c.height);
+ return await new Promise(r=>c.toBlob(r,"image/jpeg",0.88))}
+async function extract(x){
+ const img=await shrink(x.blob);
+ const prompt=`You are reading a photographed or scanned paper school registration form, written in Hebrew, mostly handwritten.
+Extract the values the parent wrote. Reply with ONLY one JSON object, no other text:
+{"is_form":true/false,"fn":"student first name","ln":"student last name","tz":"student ID number, digits only","dob":"date of birth as written","cls":"requested class","prev":"previous school","father":"father full name","mother":"mother full name","phone":"main phone","phone2":"second phone","addr":"address","email":"email","pay":"payment method","signed":true/false,"notes":"notes","uncertain":["keys whose handwriting you could not read with confidence"]}
+Rules: keep Hebrew exactly as written; use "" for empty fields; "cls" must be one of ${JSON.stringify(CLASSES)} (pick the closest); "pay" must be one of ${JSON.stringify(PAYS)} or ""; phones in the form 05X-XXXXXXX; "signed" is whether a parent signature appears; set is_form false if the image is not a registration form.`;
+ const r=await AI(prompt,{images:[img],modelTier:"default"});
+ const t=r.text||"",a=t.indexOf("{"),b=t.lastIndexOf("}");if(a<0)throw{message:"לא התקבלה תשובה תקינה"};
+ const d=JSON.parse(t.slice(a,b+1));x.unsure=(d.uncertain||[]).filter(k=>FF.some(f=>f[0]==k));
+ if(d.is_form===false)x.err="נראה שהתמונה אינה טופס רישום – כדאי לבדוק.";
+ delete d.uncertain;delete d.is_form;return d}
+function validate(d){const e=[],w=[];
+ if(!d.fn||!d.ln)e.push("חסר שם התלמיד");
+ if(!d.tz)e.push("חסר מספר זהות");else if(!tzOk(d.tz))e.push("מספר הזהות אינו תקין (ספרת ביקורת שגויה) – כנראה ספרה לא נקראה נכון");
+ else if(S.students.some(s=>s.tz==String(d.tz).replace(/\D/g,"").padStart(9,"0")))e.push("תלמיד עם מספר זהות זה כבר רשום במערכת");
+ if(!d.father)e.push("חסר שם האב");
+ if(!/^0\d{1,2}-?\d{7}$/.test((d.phone||"").replace(/\s/g,"")))e.push("מספר הטלפון הראשי חסר או לא תקין");
+ if(!CLASSES.includes(d.cls))e.push("יש לבחור כיתה");
+ if(d.signed===false)w.push("הטופס לא חתום על ידי ההורה");
+ return{e,w}}
+function drawReview(){const el=$("#reviewBox");if(!el)return;
+ if(!cur){el.innerHTML=`<div class="muted" style="text-align:center;padding:60px 10px"><div style="font-size:40px">🗂️</div>העלו טפסים סרוקים, או לחצו על "נסו עם 2 טפסים לדוגמה" כדי לראות איך זה עובד.</div>`;return}
+ const d=cur.data||{},U=cur.unsure||[],done=cur.status=="ok";
+ const inp=(k,l)=>{let c;
+  if(k=="cls")c=`<select data-k="cls"><option value="">-- בחירה --</option>${CLASSES.map(o=>`<option ${d.cls==o?'selected':''}>${o}</option>`).join("")}</select>`;
+  else if(k=="pay")c=`<select data-k="pay"><option value="">-- לא צוין --</option>${PAYS.map(o=>`<option ${d.pay==o?'selected':''}>${o}</option>`).join("")}</select>`;
+  else c=`<input data-k="${k}" value="${esc(d[k]||"")}">`;
+  return`<div class="field ${U.includes(k)?'unsure':''}"><label>${l}</label>${c}</div>`};
+ el.innerHTML=`<div class="row" style="margin-bottom:12px"><h3 style="margin:0">${done?'✓ נקלט: ':'בדיקת טופס: '}${esc(d.fn||cur.name)} ${esc(d.ln||"")}</h3>
+  ${U.length&&!done?`<span class="tag t-warn" style="margin-right:auto">${U.length} שדות מסומנים בצהוב – כדאי להשוות לתמונה</span>`:''}</div>
+  ${cur.err?`<div class="banner">${cur.err}</div>`:''}
+  <div class="review"><div class="scanimg" id="scanimg"><img src="${cur.url}" onclick="this.parentNode.classList.toggle('zoom')" title="לחיצה להגדלה"></div>
+  <div><div class="grid g2" style="gap:0 12px">${FF.map(([k,l])=>inp(k,l)).join("")}</div>
+   <div class="task"><input type="checkbox" data-k="signed" ${d.signed?'checked':''}><span>הטופס חתום על ידי ההורה</span></div>
+   <div class="vbox" id="vbox" style="margin-top:10px"></div>
+   <div class="row" style="margin-top:10px">${done?'<span class="tag t-ok">התלמיד נוסף לרשימה</span>':`<button class="btn" onclick="acceptForm()">✓ אישור והכנסה למערכת</button><button class="btn ghost" onclick="skipForm()">דילוג</button>`}</div></div></div>`;
+ el.querySelectorAll("[data-k]").forEach(i=>{const h=()=>{d[i.dataset.k]=i.type=="checkbox"?i.checked:i.value.trim();
+   const f=i.closest(".field");if(f&&f.classList.contains("unsure")){f.classList.remove("unsure");cur.unsure=cur.unsure.filter(k=>k!=i.dataset.k);drawQueue()}drawV()};
+  i.oninput=h;i.onchange=h;if(done)i.disabled=true});
+ cur.data=d;drawV()}
+function drawV(){const v=$("#vbox");if(!v||!cur||cur.status=="ok"){if(v)v.innerHTML="";return}const{e,w}=validate(cur.data);
+ v.innerHTML=e.map(x=>`<div style="background:var(--badb);color:var(--bad)">✕ ${x}</div>`).join("")+w.map(x=>`<div style="background:var(--warnb);color:var(--warn)">⚠ ${x}</div>`).join("")+
+  (!e.length?`<div style="background:var(--okb);color:var(--ok)">✓ כל הבדיקות עברו – מספר זהות תקין, אין כפילות</div>`:'')}
+function acceptForm(){const d=cur.data,{e}=validate(d);if(e.length){toast("יש לתקן: "+e[0]);return}
+ S.students.push({id:S.nextId++,fn:d.fn,ln:d.ln,tz:String(d.tz).replace(/\D/g,"").padStart(9,"0"),cls:d.cls,father:d.father,mother:d.mother||"",phone:d.phone,phone2:d.phone2||"",addr:d.addr||"",
+  dob:d.dob||"",prev:d.prev||"",email:d.email||"",pay:d.pay||"",notes:d.notes||"",status:"ממתין לאישור",paid:false,docs:!!d.signed,date:today,src:"scan"});
+ S.scanned=(S.scanned||0)+1;save();cur.status="ok";toast(`${d.fn} ${d.ln} נקלט למערכת`);nextForm()}
+function skipForm(){cur.status="skip";nextForm()}
+function nextForm(){const n=Q.find(q=>q.status=="review");if(n)cur=n;drawQueue();drawReview();if(!n)toast("כל הטפסים בתור טופלו ✓")}
+
+// --- ציור טופס (ריק או ממולא לדוגמה) ---
+const DEMO=[
+ {fn:"מנחם",ln:"שפירא",tz:"338451271",dob:"12/03/2020",cls:"א'1",prev:"גן 'אור החיים'",father:"אליעזר שפירא",mother:"רחל שפירא",phone:"050-6543210",phone2:"",addr:"רח' רבי עקיבא 45, בני ברק",email:"",pay:"הוראת קבע",signed:true,notes:"אלרגיה לבוטנים"},
+ {fn:"יהודה",ln:"וייס",tz:"214765398",dob:"05/09/2017",cls:"ד'1",prev:"ת\"ת 'תורת אמת'",father:"צבי וייס",mother:"שרה וייס",phone:"052-7788990",phone2:"03-5791113",addr:"רח' דסלר 9, בני ברק",email:"",pay:"המחאות",signed:false,notes:""}];
+function drawForm(d,photo){
+ const W=1240,H=1754,c=document.createElement("canvas"),x=c.getContext("2d");
+ const p=document.createElement("canvas");p.width=W;p.height=H;const g=p.getContext("2d");
+ g.fillStyle="#fffefa";g.fillRect(0,0,W,H);g.direction="rtl";g.textBaseline="alphabetic";
+ const L=(t,X,Y,s=28,w=600,col="#222")=>{g.font=`${w} ${s}px Assistant`;g.fillStyle=col;g.textAlign="right";g.fillText(t,X,Y)};
+ const HW=(t,X,Y,s=50)=>{if(!t)return;g.save();g.translate(X,Y);g.rotate((Math.random()-.5)*0.025);g.font=`700 ${s}px "Amatic SC"`;g.fillStyle="#1b3c8f";g.textAlign="right";g.fillText(t,0,0);g.restore()};
+ const line=(x1,x2,Y)=>{g.strokeStyle="#888";g.lineWidth=1.5;g.beginPath();g.moveTo(x1,Y);g.lineTo(x2,Y);g.stroke()};
+ const field=(xr,xl,Y,lab,val)=>{L(lab+":",xr,Y);g.font="600 28px Assistant";const w=g.measureText(lab+":").width;line(xr-w-12,xl,Y+8);HW(val,xr-w-28,Y)};
+ L('בס"ד',1160,70,24,400);
+ g.textAlign="center";g.font="800 46px Assistant";g.fillStyle="#1e4e8c";g.fillText('טופס רישום תלמיד – שנת הלימודים תשפ"ז',W/2,150);
+ g.font="400 24px Assistant";g.fillStyle="#555";g.fillText("נא למלא בכתב ברור ובעט כהה. את מספר הזהות יש לכתוב ספרה אחת בכל משבצת.",W/2,195);
+ g.strokeStyle="#1e4e8c";g.lineWidth=3;g.beginPath();g.moveTo(80,220);g.lineTo(1160,220);g.stroke();
+ const sec=(t,Y)=>{g.fillStyle="#e8f0fb";g.fillRect(80,Y-34,1080,48);L(t,1140,Y,30,800,"#1e4e8c")};
+ sec("פרטי התלמיד",290);
+ field(1160,640,380,"שם פרטי",d.fn);field(600,80,380,"שם משפחה",d.ln);
+ L("מספר זהות:",1160,480);for(let i=0;i<9;i++){const bx=960-(8-i)*62;g.strokeStyle="#555";g.lineWidth=2;g.strokeRect(bx-50,435,50,62);
+  if(d.tz&&d.tz[i]){g.save();g.font='700 52px "Amatic SC"';g.fillStyle="#1b3c8f";g.textAlign="center";g.fillText(d.tz[i],bx-25+(Math.random()-.5)*4,485);g.restore()}}
+ field(1160,640,590,"תאריך לידה",d.dob);field(600,80,590,"כיתה מבוקשת",d.cls);
+ field(1160,80,690,"מוסד לימודים קודם",d.prev);
+ sec("פרטי ההורים",800);
+ field(1160,640,890,"שם האב",d.father);field(600,80,890,"שם האם",d.mother);
+ field(1160,640,990,"טלפון ראשי",d.phone);field(600,80,990,"טלפון נוסף",d.phone2);
+ field(1160,80,1090,"כתובת מגורים",d.addr);field(1160,80,1190,'דוא"ל',d.email);
+ sec("תשלום והצהרה",1300);
+ L("אמצעי תשלום שכר לימוד (סמנו):",1160,1385);
+ PAYS.forEach((o,i)=>{const bx=1150-i*270;g.strokeStyle="#555";g.lineWidth=2;g.strokeRect(bx-30,1415,30,30);L(o,bx-42,1441,26,400);
+  if(d.pay==o){g.save();g.strokeStyle="#1b3c8f";g.lineWidth=4;g.beginPath();g.moveTo(bx-28,1417);g.lineTo(bx+2,1449);g.moveTo(bx+2,1415);g.lineTo(bx-30,1447);g.stroke();g.restore()}});
+ field(1160,80,1530,"הערות (רפואיות / אחר)",d.notes);
+ L("אני מאשר/ת את נכונות הפרטים ומתחייב/ת לתקנון המוסד.",1160,1615,24,400,"#444");
+ field(1160,700,1690,"תאריך",d.fn?"17/11/2026":"");field(640,80,1690,"חתימת ההורה","");
+ if(d.signed){g.save();g.strokeStyle="#1b3c8f";g.lineWidth=3;g.beginPath();g.moveTo(420,1685);g.bezierCurveTo(390,1630,340,1700,310,1660);g.bezierCurveTo(280,1620,250,1705,200,1670);g.lineTo(150,1680);g.stroke();g.restore()}
+ if(!photo)return p;
+ c.width=W+80;c.height=H+80;x.fillStyle="#6b6f76";x.fillRect(0,0,c.width,c.height);
+ x.save();x.translate(c.width/2,c.height/2);x.rotate((Math.random()-.5)*0.03);x.shadowColor="rgba(0,0,0,.35)";x.shadowBlur=18;x.drawImage(p,-W/2,-H/2);x.restore();return c}
+async function fontsReady(){try{await Promise.all([document.fonts.load('700 50px "Amatic SC"',"אבג"),document.fonts.load('600 28px Assistant',"אבג")])}catch(e){}}
+async function demoForms(){await fontsReady();
+ const blobs=await Promise.all(DEMO.map(d=>new Promise(r=>drawForm(d,true).toBlob(r,"image/jpeg",0.9))));
+ blobs.forEach((b,i)=>b.name=`טופס לדוגמה ${i+1}.jpg`);addFiles(blobs,DEMO)}
+async function blankForm(){await fontsReady();const cv=drawForm({},false);
+ $("#modalBody").innerHTML=`<h3>טופס רישום ריק</h3><p class="muted">הטופס בנוי כך שהמערכת תקרא אותו בקלות: מבנה קבוע, משבצות לספרות הזהות ותיבות סימון.</p>
+  <img src="${cv.toDataURL("image/png")}" style="width:100%;border:1px solid var(--line);border-radius:6px">
+  <div class="row" style="margin-top:12px">${DL?`<button class="btn" id="dlBtn">⬇ הורדה להדפסה (PNG)</button>`:'<span class="muted">ההורדה אינה זמינה בתצוגה זו</span>'}<button class="btn ghost" onclick="closeM()" style="margin-right:auto">סגירה</button></div>`;
+ $("#modal").classList.add("show");
+ const b=$("#dlBtn");if(b)b.onclick=()=>cv.toBlob(async bl=>{try{await DL.save({filename:"טופס-רישום-תשפז.png",data:bl});toast("הטופס נשמר")}catch(e){if(e.code!="declined")toast("לא ניתן להוריד כאן")}},"image/png")}
+
+// ---------- רישום ----------
+let step=0, draft={};
+V.reg=()=>{
+ const names=["פרטי התלמיד","פרטי הורים","מסמכים ותשלום","סיכום ושליחה"];
+ const f=(k,l,t="text",ph="")=>`<div class="field"><label>${l}</label><input type="${t}" id="f_${k}" value="${esc(draft[k]||"")}" placeholder="${ph}"></div>`;
+ let body="";
+ if(step==0) body=`<div class="grid g2">${f("fn","שם פרטי *")}${f("ln","שם משפחה *")}${f("tz","מספר זהות *","text","9 ספרות")}${f("dob","תאריך לידה","date")}
+   <div class="field"><label>כיתה מבוקשת *</label><select id="f_cls">${CLASSES.map(c=>`<option ${draft.cls==c?'selected':''}>${c}</option>`).join("")}</select></div>${f("prev","מוסד לימודים קודם")}</div>`;
+ if(step==1) body=`<div class="grid g2">${f("father","שם האב *")}${f("mother","שם האם")}${f("phone","טלפון ראשי *","tel","05X-XXXXXXX")}${f("phone2","טלפון נוסף","tel")}${f("addr","כתובת מגורים")}${f("email","דוא\"ל","email")}</div>`;
+ if(step==2) body=`<p class="muted">סמנו מה צורף. בגרסה האמיתית – העלאת קבצים.</p>
+   ${[["d1","צילום תעודת זהות של ההורים + ספח"],["d2","אישור לימודים / תעודה מהמוסד הקודם"],["d3","הצהרת בריאות"],["d4","טופס הוראת קבע לשכר לימוד"]].map(([k,l])=>`<div class="task"><input type="checkbox" id="f_${k}" ${draft[k]?'checked':''}><span>${l}</span></div>`).join("")}
+   <div class="field" style="margin-top:14px"><label>אמצעי תשלום</label><select id="f_pay">${["הוראת קבע","כרטיס אשראי","המחאות","מזומן במשרד"].map(o=>`<option ${draft.pay==o?'selected':''}>${o}</option>`).join("")}</select></div>
+   <div class="field"><label>הערות</label><textarea id="f_notes" rows="2">${esc(draft.notes||"")}</textarea></div>`;
+ if(step==3){const d=draft;body=`<table>${[["תלמיד",`${d.fn} ${d.ln}`],["ת.ז.",d.tz],["כיתה",d.cls],["אב",d.father],["טלפון",d.phone],["כתובת",d.addr||"-"],["מסמכים",["d1","d2","d3","d4"].filter(k=>d[k]).length+" מתוך 4"],["תשלום",d.pay]].map(r=>`<tr><th style="width:140px">${r[0]}</th><td>${esc(r[1]||"")}</td></tr>`).join("")}</table>`}
+ return hdr("רישום תלמיד חדש")+`<div class="card"><div class="steps">${names.map((n,i)=>`<div class="${i==step?'on':i<step?'done':''}">${i<step?'✓ ':''}${n}</div>`).join("")}</div>
+  ${body}<div id="err" style="color:var(--bad);margin:6px 0"></div>
+  <div class="row" style="margin-top:10px">${step>0?`<button class="btn ghost" onclick="regStep(-1)">→ חזרה</button>`:''}
+  <button class="btn" onclick="regStep(1)" style="margin-right:auto">${step==3?'שליחת הרישום ✓':'המשך ←'}</button></div></div>`;
+};
+function collect(){document.querySelectorAll("[id^=f_]").forEach(el=>{draft[el.id.slice(2)]=el.type=="checkbox"?el.checked:el.value.trim()})}
+function regStep(d){
+ collect();
+ if(d>0){
+  let e="";
+  if(step==0){if(!draft.fn||!draft.ln)e="יש למלא שם פרטי ושם משפחה";else if(!/^\d{9}$/.test(draft.tz||""))e="מספר זהות חייב להכיל 9 ספרות";else if(!tzOk(draft.tz))e="מספר הזהות אינו תקין (ספרת ביקורת)";else if(S.students.some(s=>s.tz==draft.tz))e="תלמיד עם מספר זהות זה כבר רשום"}
+  if(step==1){if(!draft.father)e="יש למלא שם האב";else if(!/^0\d{1,2}-?\d{7}$/.test(draft.phone||""))e="מספר טלפון לא תקין"}
+  if(e){$("#err").textContent=e;return}
+  if(step==3){
+   const d=draft, full=["d1","d2","d3","d4"].every(k=>d[k]);
+   S.students.push({id:S.nextId++,fn:d.fn,ln:d.ln,tz:d.tz,cls:d.cls,father:d.father,phone:d.phone,addr:d.addr||"",status:"ממתין לאישור",paid:false,docs:full,date:today});
+   save();toast(`הבקשה של ${d.fn} ${d.ln} נקלטה וממתינה לאישור`);draft={};step=0;go("students");return}
+ }
+ step=Math.max(0,Math.min(3,step+d));render();
+}
+
+// ---------- תלמידים ----------
+let q="",fc="";
+V.students=()=>hdr("רשימת תלמידים",`<button class="btn sec" onclick="copyList()">העתקת רשימה</button><button class="btn" onclick="go('reg')">+ תלמיד חדש</button>`)+
+ `<div class="card"><div class="row" style="margin-bottom:12px"><input id="q" placeholder="🔍 חיפוש לפי שם, ת.ז. או טלפון" style="max-width:320px" value="${esc(q)}">
+  <select id="fc" style="max-width:160px"><option value="">כל הכיתות</option>${CLASSES.map(c=>`<option ${fc==c?'selected':''}>${c}</option>`).join("")}</select><span class="muted" id="cnt"></span></div>
+  <table><thead><tr><th>שם</th><th>ת.ז.</th><th>כיתה</th><th>אב</th><th>טלפון</th><th>סטטוס</th><th>שכ"ל</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>`;
+function filtered(){return S.students.filter(s=>(!fc||s.cls==fc)&&(!q||(s.fn+" "+s.ln+s.tz+s.phone+s.father).includes(q)))}
+A.students=()=>{
+ const draw=()=>{const L=filtered();$("#cnt").textContent=L.length+" תלמידים";
+  $("#tb").innerHTML=L.map(s=>`<tr><td><b>${s.fn} ${s.ln}</b>${s.src=="scan"?' <span title="נקלט מטופס סרוק">📥</span>':''}</td><td>${s.tz}</td><td>${s.cls}</td><td>${s.father}</td><td>${s.phone}</td><td>${stTag(s.status)}</td>
+  <td>${s.paid?'<span class="tag t-ok">שולם</span>':'<span class="tag t-bad">חוב</span>'}</td><td><button class="btn sm sec" onclick="card(${s.id})">כרטיס</button></td></tr>`).join("")||'<tr><td colspan=8 class="muted">לא נמצאו תלמידים</td></tr>'};
+ $("#q").oninput=e=>{q=e.target.value.trim();draw()}; $("#fc").onchange=e=>{fc=e.target.value;draw()}; draw();
+};
+function card(id){const s=S.students.find(x=>x.id==id);
+ $("#modalBody").innerHTML=`<h3>כרטיס תלמיד – ${s.fn} ${s.ln}</h3>
+ <div class="grid g2">${[["fn","שם פרטי"],["ln","שם משפחה"],["tz","ת.ז."],["father","שם האב"],["phone","טלפון"],["addr","כתובת"]].map(([k,l])=>`<div class="field"><label>${l}</label><input id="e_${k}" value="${esc(s[k])}"></div>`).join("")}
+ <div class="field"><label>כיתה</label><select id="e_cls">${CLASSES.map(c=>`<option ${s.cls==c?'selected':''}>${c}</option>`).join("")}</select></div>
+ <div class="field"><label>סטטוס</label><select id="e_status">${["פעיל","ממתין לאישור","עזב"].map(c=>`<option ${s.status==c?'selected':''}>${c}</option>`).join("")}</select></div></div>
+ <div class="task"><input type="checkbox" id="e_paid" ${s.paid?'checked':''}><span>שכר לימוד שולם</span></div>
+ <div class="task"><input type="checkbox" id="e_docs" ${s.docs?'checked':''}><span>כל המסמכים התקבלו</span></div>
+ <p class="muted">נרשם בתאריך ${fmt(s.date)}</p>
+ <div class="row"><button class="btn" onclick="saveCard(${id})">שמירה</button><button class="btn sec" onclick="closeM();docFor=${id};go('docs')">הפקת אישור</button><button class="btn ghost" onclick="closeM()" style="margin-right:auto">סגירה</button></div>`;
+ $("#modal").classList.add("show")}
+function saveCard(id){const s=S.students.find(x=>x.id==id);document.querySelectorAll("[id^=e_]").forEach(el=>{s[el.id.slice(2)]=el.type=="checkbox"?el.checked:el.value});save();closeM();toast("הפרטים נשמרו");render()}
+function closeM(){$("#modal").classList.remove("show")}
+$("#modal").onclick=e=>{if(e.target.id=="modal")closeM()};
+function copyList(){const t=filtered().map(s=>`${s.fn} ${s.ln}\t${s.cls}\t${s.father}\t${s.phone}`).join("\n");
+ navigator.clipboard.writeText("שם\tכיתה\tאב\tטלפון\n"+t).then(()=>toast("הרשימה הועתקה – אפשר להדביק באקסל"),()=>toast("ההעתקה נחסמה בדפדפן"))}
+
+// ---------- נוכחות ----------
+let attCls="ג'1";
+V.att=()=>{const key=today+"|"+attCls, rec=S.att[key]||{}, L=S.students.filter(s=>s.cls==attCls&&s.status=="פעיל");
+ const c={p:0,a:0,l:0};Object.values(rec).forEach(v=>c[v]++);
+ return hdr("נוכחות יומית",`<select onchange="attCls=this.value;render()" style="width:140px">${CLASSES.map(x=>`<option ${x==attCls?'selected':''}>${x}</option>`).join("")}</select><span class="muted">${fmt(today)}</span>`)+
+ `<div class="grid g3"><div class="card stat"><div class="n" style="color:var(--ok)">${c.p}</div><div class="l">נוכחים</div></div><div class="card stat"><div class="n" style="color:var(--bad)">${c.a}</div><div class="l">חסרים</div></div><div class="card stat"><div class="n" style="color:var(--warn)">${c.l}</div><div class="l">איחורים</div></div></div>
+ <div class="card"><div class="row" style="margin-bottom:8px"><button class="btn sm sec" onclick="allPresent()">סמן את כולם נוכחים</button></div>
+ <table>${L.map(s=>`<tr><td><b>${s.fn} ${s.ln}</b></td><td class="att" style="text-align:left">
+  ${[["p","נוכח"],["l","איחור"],["a","חסר"]].map(([k,l])=>`<button class="${k} ${rec[s.id]==k?'on':''}" onclick="mark(${s.id},'${k}')">${l}</button>`).join(" ")}</td></tr>`).join("")||'<tr><td class="muted">אין תלמידים פעילים בכיתה זו</td></tr>'}</table></div>`};
+function mark(id,k){const key=today+"|"+attCls;S.att[key]=S.att[key]||{};S.att[key][id]=k;save();render()}
+function allPresent(){const key=today+"|"+attCls;S.att[key]={};S.students.filter(s=>s.cls==attCls&&s.status=="פעיל").forEach(s=>S.att[key][s.id]="p");save();render()}
+
+// ---------- מסמכים ----------
+let docFor=1, docType="study";
+const DT={study:"אישור לימודים",pay:"אישור תשלום שכר לימוד",leave:"אישור עזיבה / העברה"};
+V.docs=()=>{const s=S.students.find(x=>x.id==docFor)||S.students[0];
+ const body={study:`הננו לאשר בזה כי התלמיד <b>${s.fn} ${s.ln}</b>, ת.ז. <b>${s.tz}</b>, לומד במוסדנו בכיתה <b>${s.cls}</b> בשנת הלימודים תשפ"ז.`,
+  pay:`הננו לאשר בזה כי שכר הלימוד עבור התלמיד <b>${s.fn} ${s.ln}</b>, ת.ז. <b>${s.tz}</b>, כיתה <b>${s.cls}</b>, ${s.paid?'<b>שולם במלואו</b>':'<b>טרם הוסדר</b>'} לשנת הלימודים תשפ"ז.`,
+  leave:`הננו לאשר בזה כי התלמיד <b>${s.fn} ${s.ln}</b>, ת.ז. <b>${s.tz}</b>, למד במוסדנו עד כיתה <b>${s.cls}</b>, ואין מניעה מצדנו להעברתו למוסד אחר.`}[docType];
+ return hdr("אישורים ומסמכים",`<button class="btn" onclick="copyDoc()">העתקת הנוסח</button>`)+
+ `<div class="grid" style="grid-template-columns:260px 1fr"><div class="card">
+  <div class="field"><label>סוג מסמך</label><select onchange="docType=this.value;render()">${Object.entries(DT).map(([k,v])=>`<option value="${k}" ${k==docType?'selected':''}>${v}</option>`).join("")}</select></div>
+  <div class="field"><label>תלמיד</label><select onchange="docFor=+this.value;render()">${S.students.map(x=>`<option value="${x.id}" ${x.id==s.id?'selected':''}>${x.fn} ${x.ln} (${x.cls})</option>`).join("")}</select></div>
+  <p class="muted" style="font-size:14px">בגרסה המלאה: הורדה כ-PDF עם לוגו וחתימה דיגיטלית.</p></div>
+  <div class="card"><div class="doc" id="docText"><div style="display:flex;justify-content:space-between" class="muted"><span>בס"ד</span><span>${fmt(today)}</span></div>
+  <h4>${DT[docType]}</h4><p style="text-align:center" class="muted">לכל מאן דבעי</p><p>${body}</p><p>האישור ניתן לבקשת ההורים.</p><br><p>בכבוד רב,<br>מזכירות בית הספר</p></div></div></div>`};
+function copyDoc(){navigator.clipboard.writeText($("#docText").innerText).then(()=>toast("הנוסח הועתק"),()=>toast("ההעתקה נחסמה בדפדפן"))}
+
+// ---------- הודעות ----------
+V.msgs=()=>hdr("הודעות להורים")+`<div class="grid g2"><div class="card"><h3>הודעה חדשה</h3>
+ <div class="field"><label>נמענים</label><select id="m_to"><option>כל ההורים</option>${CLASSES.map(c=>`<option>הורי כיתה ${c}</option>`).join("")}<option>הורים עם חוב שכר לימוד</option></select></div>
+ <div class="field"><label>תבנית מוכנה</label><select onchange="$('#m_txt').value=this.value"><option value="">-- בחירה --</option>
+  <option>תזכורת: מחר טיול, יש להגיע עם כובע ובקבוק מים.</option><option>נא להסדיר את תשלום שכר הלימוד במזכירות עד סוף החודש.</option><option>הנכם מוזמנים לאסיפת הורים שתתקיים בבית הספר.</option><option>מחר הלימודים יסתיימו מוקדם, בשעה 12:00.</option></select></div>
+ <div class="field"><label>תוכן ההודעה</label><textarea id="m_txt" rows="4"></textarea></div>
+ <div class="row"><button class="btn" onclick="sendMsg()">שמירה בהיסטוריה ✓</button><span class="muted" style="font-size:14px">בגרסה המלאה: שליחה ב-SMS / מערכת צלצול</span></div></div>
+ <div class="card"><h3>היסטוריית הודעות</h3>${S.msgs.slice().reverse().map(m=>`<div class="task" style="display:block"><div class="row"><span class="tag t-info">${m.to}</span><span class="muted" style="margin-right:auto">${fmt(m.d)}</span></div><div style="margin-top:4px">${esc(m.txt)}</div></div>`).join("")}</div></div>`;
+function sendMsg(){const t=$("#m_txt").value.trim();if(!t){toast("יש לכתוב תוכן");return}
+ const to=$("#m_to").value;const n=to=="כל ההורים"?S.students.length:to.includes("חוב")?S.students.filter(s=>!s.paid).length:S.students.filter(s=>to.endsWith(s.cls)).length;
+ S.msgs.push({to,txt:t,d:today});save();toast(`ההודעה נשמרה (${n} משפחות)`);render()}
+
+// ---------- משימות ויומן ----------
+V.tasks=()=>hdr("משימות ויומן")+`<div class="grid g2"><div class="card"><h3>משימות משרד</h3>
+ <div class="row" style="margin-bottom:8px"><input id="t_new" placeholder="משימה חדשה..." style="flex:1"><input id="t_due" type="date" value="${today}" style="width:150px"><button class="btn" onclick="addTask()">הוספה</button></div>
+ ${S.tasks.map((t,i)=>`<div class="task ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="S.tasks[${i}].done=this.checked;save();render()"><span>${esc(t.t)}</span>
+  <span class="muted" style="margin-right:auto;${!t.done&&t.due<today?'color:var(--bad)':''}">${fmt(t.due)}</span><button class="btn sm ghost" onclick="S.tasks.splice(${i},1);save();render()">✕</button></div>`).join("")}</div>
+ <div class="card"><h3>יומן אירועים</h3><div class="row" style="margin-bottom:8px"><input id="e_d" type="date" style="width:150px"><input id="e_t" placeholder="תיאור האירוע" style="flex:1"><button class="btn" onclick="addEv()">הוספה</button></div>
+ <table>${S.events.slice().sort((a,b)=>a.d.localeCompare(b.d)).map(e=>`<tr><td style="width:100px"><b>${fmt(e.d)}</b></td><td>${esc(e.t)}</td></tr>`).join("")}</table></div></div>`;
+function addTask(){const t=$("#t_new").value.trim();if(!t)return;S.tasks.unshift({t,done:false,due:$("#t_due").value||today});save();render()}
+function addEv(){const d=$("#e_d").value,t=$("#e_t").value.trim();if(!d||!t){toast("יש למלא תאריך ותיאור");return}S.events.push({d,t});save();render()}
+
+// ---------- איפיון ----------
+V.spec=()=>hdr("איפיון קצר – מערכת מזכירות",`<button class="btn ghost" onclick="if(window._r){localStorage.removeItem('schoolOffice');location.reload()}else{window._r=1;toast('לחצו שוב לאיפוס נתוני הדוגמה')}">איפוס נתוני דוגמה</button>`)+`<div class="card spec">
+<h4>הרעיון המרכזי</h4><p>ההורים ממשיכים למלא <b>טופס רישום על נייר</b> כמו היום. המזכיר סורק או מצלם את הטפסים, והמערכת קוראת את כתב היד וממלאת את כל השדות בעצמה. המזכיר לא מקליד – רק משווה, מתקן אם צריך ומאשר.</p>
+<h4>תהליך הקליטה</h4><ul>
+<li><b>1. טופס קבוע:</b> המערכת מפיקה טופס רישום להדפסה במבנה קבוע – משבצת לכל ספרה בתעודת הזהות, תיבות סימון לאמצעי התשלום ושורת חתימה. מבנה קבוע = פענוח מדויק יותר.</li>
+<li><b>2. סריקה בערימה:</b> מעלים כמה טפסים יחד (סורק משרדי או צילום בטלפון). כל טופס נכנס לתור ומפוענח לבד ברקע.</li>
+<li><b>3. בדיקה מהירה:</b> מסך מפוצל – תמונת הטופס מצד אחד והשדות שמולאו מהצד השני. שדות שהמערכת לא בטוחה בהם מסומנים בצהוב.</li>
+<li><b>4. בדיקות אוטומטיות:</b> ספרת ביקורת של מספר הזהות (תופס ספרה שנקראה לא נכון), תלמיד שכבר רשום, טלפון לא תקין, טופס לא חתום.</li>
+<li><b>5. אישור בלחיצה:</b> התלמיד נכנס לרשימה בסטטוס "ממתין לאישור", והמערכת עוברת מיד לטופס הבא בתור.</li></ul>
+<h4>מטרות נוספות</h4><p>לרכז במקום אחד גם את שאר עבודת המזכירות: מעקב נוכחות ותשלומים, הפקת אישורים ותקשורת עם ההורים.</p>
+<h4>משתמשים</h4><ul><li><b>מזכיר/ה</b> – הרשאות מלאות (המשתמש העיקרי).</li><li><b>מנהל</b> – צפייה בדוחות ואישור בקשות רישום.</li><li><b>מלמד / מחנך</b> – סימון נוכחות לכיתה שלו בלבד.</li><li><b>הורים</b> (שלב ב') – מילוי טופס רישום מקוון.</li></ul>
+<h4>מודולים בסקיצה</h4><ul>
+<li><b>לוח בקרה</b> – מספרים מרכזיים, בקשות ממתינות, אירועים ומשימות קרובות.</li>
+<li><b>רישום</b> – אשף ב-4 שלבים עם בדיקות תקינות (ת.ז. 9 ספרות, טלפון, כפילות). בקשה חדשה נכנסת בסטטוס "ממתין לאישור".</li>
+<li><b>תלמידים</b> – חיפוש, סינון לפי כיתה, כרטיס תלמיד לעריכה, העתקת רשימה לאקסל.</li>
+<li><b>נוכחות</b> – סימון יומי לפי כיתה: נוכח / איחור / חסר.</li>
+<li><b>אישורים</b> – אישור לימודים, אישור תשלום, אישור עזיבה – ממולאים אוטומטית.</li>
+<li><b>הודעות</b> – תבניות מוכנות ושליחה לפי קבוצה (כיתה / בעלי חוב).</li>
+<li><b>משימות ויומן</b> – רשימת מטלות משרד עם תאריך יעד ויומן אירועים.</li></ul>
+<h4>לא בסקיצה – לשלב הבא</h4><ul><li>שמירת תמונת הטופס הסרוק בתיק התלמיד (כרגע הסריקה לא נשמרת).</li><li>קליטה ישירה מהסורק: הסורק שולח לתיקייה או למייל, והטפסים נכנסים לתור לבד.</li><li>ברקוד על כל טופס מודפס, כדי לזהות טופס של כמה עמודים ולהצמיד אותם.</li><li>קליטת טפסים נוספים באותה שיטה: הצהרת בריאות, אישור יציאה לטיול, הוראת קבע.</li><li>שרת ומסד נתונים משותף + כניסה עם סיסמה והרשאות.</li><li>העלאת קבצים (צילומי ת.ז., אישורים) והפקת PDF עם לוגו וחתימה.</li><li>שליחת SMS / הודעה קולית בפועל, וחיבור לגביית הוראות קבע.</li><li>דוחות: נוכחות חודשית, חובות, רשימות לפי כיתה, מעבר שנה.</li><li>טופס רישום מקוון להורים שנכנס ישירות לרשימת הממתינים.</li></ul>
+<h4>שאלות פתוחות למזכיר</h4><ul><li>איזה סורק יש במשרד, והאם הוא סורק כמה דפים ברצף?</li><li>כמה טפסי רישום מגיעים בשנה, ובאיזו תקופה עיקר העומס?</li><li>האם אפשר לעבור לטופס החדש, או שצריך לקלוט גם את הטופס הקיים שלכם כמו שהוא?</li><li>אילו שדות חובה בטופס הרישום הנוכחי שלכם? (לשלוח צילום של הטופס)</li><li>איך גובים היום שכר לימוד, ומי צריך לראות את החובות?</li><li>אילו אישורים מבקשים הכי הרבה?</li><li>האם המלמדים יסמנו נוכחות בעצמם, או שזה נשאר במשרד?</li><li>באיזה ערוץ ההורים מקבלים הודעות היום?</li></ul></div>`;
+
+render();
+</script>
+</body>
+</html>

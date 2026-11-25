@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>כניסה – מערכת המזכירות</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;background:linear-gradient(135deg,#1d5fa8,#2f7fd0);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#1f2a37}
+.box{background:#fff;border-radius:18px;padding:30px 28px;width:min(440px,100%);box-shadow:0 20px 50px rgba(0,0,0,.2)}
+h1{margin:0 0 4px;font-size:26px;text-align:center}
+.sub{text-align:center;color:#6b7280;margin:0 0 20px}
+.tabs{display:flex;background:#eef1f5;border-radius:10px;padding:4px;margin-bottom:18px}
+.tabs button{flex:1;border:0;background:none;padding:9px;font:inherit;font-weight:700;color:#6b7280;border-radius:8px;cursor:pointer}
+.tabs button.on{background:#fff;color:#1d5fa8;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+label{display:block;font-size:14px;color:#6b7280;font-weight:600;margin:12px 0 4px}
+input{width:100%;font:inherit;font-size:17px;padding:11px 12px;border:1px solid #cdd4dd;border-radius:9px}
+input:focus{outline:2px solid #9cc0ea;border-color:#1d5fa8}
+input.code{font-size:30px;letter-spacing:10px;text-align:center;direction:ltr;font-weight:700}
+input.coupon{text-transform:uppercase;letter-spacing:2px;direction:ltr;text-align:center;font-weight:700}
+.btn{width:100%;margin-top:18px;background:#1d5fa8;color:#fff;border:0;border-radius:10px;padding:13px;font:inherit;font-size:18px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.6}
+.link{background:none;border:0;color:#1d5fa8;font:inherit;font-weight:600;cursor:pointer;padding:0;margin-top:12px;display:block;width:100%;text-align:center}
+.msg{margin-top:14px;padding:10px 12px;border-radius:9px;font-size:15px;display:none;line-height:1.5}
+.msg.err{display:block;background:#fde8e8;color:#b91c1c}
+.msg.ok{display:block;background:#e7f6ec;color:#15803d}
+.msg.info{display:block;background:#e7f0fb;color:#1d5fa8}
+.hint{color:#6b7280;font-size:13px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div style="text-align:center;font-size:44px">🏫</div>
+  <h1 id="appName">מערכת המזכירות</h1>
+  <p class="sub">רישום תלמידים · מדבקות · משימות</p>
+  <div id="main"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const C=window.APP_CONFIG||{};
+$("#appName").textContent=C.APP_NAME||"מערכת המזכירות";
+const next=new URLSearchParams(location.search).get("next")||"index.html";
+let mode="login",email="";
+function msg(t,kind){const m=$("#msg");m.className="msg "+(kind||"err");m.innerHTML=t}
+function view(){
+ if(!Auth.enabled){$("#main").innerHTML=`<div class="msg info">שרת ההרשמה עדיין לא חובר, ולכן המערכת פתוחה כרגע לכולם.</div><a class="btn" style="display:block;text-align:center;text-decoration:none" href="index.html">כניסה למערכת</a>`;return}
+ if(Auth.token()&&Auth.user()&&mode!=="code"){location.replace(next);return}
+ if(mode==="code"){
+  $("#main").innerHTML=`<div class="msg ok" style="display:block">שלחנו קוד בן 6 ספרות אל <b dir="ltr">${email.replace(/</g,"")}</b></div>
+  <label>הקוד מהמייל</label><input class="code" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••">
+  <div class="hint">לא הגיע? כדאי לבדוק גם בתיקיית הספאם / קידומי מכירות.</div>
+  <button class="btn" id="go">כניסה</button>
+  <button class="link" id="back">← שינוי כתובת / שליחה מחדש</button><div id="msg" class="msg"></div>`;
+  const c=$("#code");c.focus();c.oninput=()=>{c.value=c.value.replace(/\D/g,"");if(c.value.length===6)verify()};
+  $("#go").onclick=verify;$("#back").onclick=()=>{mode="login";view()};return}
+ $("#main").innerHTML=`<div class="tabs"><button id="tL" class="${mode==='login'?'on':''}">כניסה</button><button id="tR" class="${mode==='register'?'on':''}">הרשמה עם קוד קופון</button></div>
+ ${mode==='register'?`<label>שם מלא</label><input id="name" autocomplete="name">
+ <label>שם המוסד</label><input id="school" placeholder="לדוגמה: תלמוד תורה ...">`:''}
+ <label>כתובת מייל</label><input id="email" type="email" dir="ltr" autocomplete="email" value="${email.replace(/"/g,"")}" placeholder="name@gmail.com">
+ ${mode==='register'?`<label>קוד קופון</label><input id="coupon" class="coupon" placeholder="XXXX-XXXX"><div class="hint">את הקוד מקבלים ממנהל המערכת.</div>`:''}
+ <button class="btn" id="go">${mode==='register'?'הרשמה ושליחת קוד':'שליחת קוד כניסה למייל'}</button><div id="msg" class="msg"></div>
+ ${mode==='login'?`<p class="hint" style="text-align:center;margin-top:16px">אין לכם גישה? צריך <button class="link" style="display:inline;width:auto;margin:0" id="toR">קוד קופון</button> ממנהל המערכת${C.OWNER_CONTACT?` (<span dir="ltr">${C.OWNER_CONTACT}</span>)`:''}.</p>`:''}`;
+ $("#tL").onclick=()=>{mode="login";view()};$("#tR").onclick=()=>{mode="register";view()};
+ const r=$("#toR");if(r)r.onclick=()=>{mode="register";view()};
+ $("#go").onclick=send;document.querySelectorAll("input").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")send()});
+ (mode==='register'?$("#name"):$("#email")).focus();
+}
+async function send(){
+ email=$("#email").value.trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg("כתובת המייל לא תקינה");return}
+ const b=$("#go");b.disabled=true;b.textContent="שולח…";
+ try{
+  const r=mode==="register"?await Auth.api("register",{email,name:$("#name").value,school:$("#school").value,coupon:$("#coupon").value})
+                           :await Auth.api("login",{email});
+  if(r.ok){mode="code";view();if(r.note)msg(r.note,"info");return}
+  msg(r.error||"משהו השתבש");if(r.needCoupon&&mode==="login"){setTimeout(()=>{mode="register";view();msg(r.error,"info")},1600)}
+ }catch(e){msg("אין חיבור לשרת. בדקו את האינטרנט ונסו שוב.")}
+ b.disabled=false;b.textContent=mode==='register'?'הרשמה ושליחת קוד':'שליחת קוד כניסה למייל'}
+async function verify(){
+ const code=$("#code").value;if(code.length!==6){msg("הקוד הוא 6 ספרות");return}
+ const b=$("#go");b.disabled=true;b.textContent="בודק…";
+ try{const r=await Auth.api("verify",{email,code});
+  if(r.ok){Auth.save(r.token,r.user);msg("✓ נכנסתם בהצלחה","ok");location.replace(next);return}
+  msg(r.error||"הקוד לא נכון")}catch(e){msg("אין חיבור לשרת. נסו שוב.")}
+ b.disabled=false;b.textContent="כניסה"}
+view();
+</script>
+</body>
+</html>

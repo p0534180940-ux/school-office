@@ -3,31 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>כלים למזכירות בית הספר</title>
+<title>מערכת המזכירות</title>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Assistant,system-ui,sans-serif;background:#f3f5f8;color:#1f2a37}
-.hero{background:linear-gradient(135deg,#1d5fa8,#2f7fd0);color:#fff;padding:54px 24px 70px;text-align:center}
+.hero{background:linear-gradient(135deg,#1d5fa8,#2f7fd0);color:#fff;padding:46px 24px 74px;text-align:center}
 .hero h1{margin:0 0 8px;font-size:36px}
-.hero p{margin:0;font-size:19px;opacity:.9}
-.cards{max-width:1000px;margin:-40px auto 40px;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
-a.card{background:#fff;border-radius:16px;padding:24px;text-decoration:none;color:inherit;border:1px solid #e3e7ed;box-shadow:0 6px 20px rgba(20,40,80,.08);transition:.15s;display:block}
+.hero p{margin:0;font-size:19px;opacity:.92}
+.cards{max-width:1100px;margin:-44px auto 26px;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+a.card{background:#fff;border-radius:16px;padding:22px;text-decoration:none;color:inherit;border:1px solid #e3e7ed;box-shadow:0 6px 20px rgba(20,40,80,.08);transition:.15s;display:flex;flex-direction:column}
 a.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(20,40,80,.14)}
-.ic{font-size:42px}
-h2{margin:8px 0 6px;font-size:22px;color:#1d5fa8}
-.card p{margin:0;color:#5f6b7a;line-height:1.6;font-size:16px}
+.ic{font-size:40px}
+h2{margin:8px 0 6px;font-size:21px;color:#1d5fa8}
+.card p{margin:0;color:#5f6b7a;line-height:1.6;font-size:15.5px;flex:1}
 .go{margin-top:14px;font-weight:700;color:#1d5fa8}
+.more{max-width:1100px;margin:0 auto 40px;padding:0 20px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.more a{background:#fff;border:1px solid #e3e7ed;border-radius:30px;padding:9px 18px;text-decoration:none;color:#1f2a37;font-weight:600}
+.more a:hover{border-color:#1d5fa8;color:#1d5fa8}
+.acc{max-width:1100px;margin:0 auto 18px;padding:0 20px}
+.acc div{background:#fdf3e2;color:#8a4f06;border-radius:12px;padding:12px 16px;text-align:center}
 footer{text-align:center;color:#9aa3ad;font-size:14px;padding-bottom:30px}
 </style>
 </head>
 <body>
-<div class="hero"><h1>🏫 כלים למזכירות בית הספר</h1><p>כלים פשוטים לעבודה היומיומית במשרד</p></div>
+<div class="hero"><h1>🏫 <span id="appName">מערכת המזכירות</span></h1><p id="hello">כל הכלים של המשרד במקום אחד</p></div>
 <div class="cards">
- <a class="card" href="labels.html"><div class="ic">🏷️</div><h2>מדבקות שמות</h2><p>מדבקות עם שמות התלמידים, דף מלא לכל תלמיד ודפים כלליים. דפים של 30 או 50 מדבקות, מידות מדויקות, סמל ליד השם, וקובץ PDF מוכן להדפסה.</p><div class="go">לפתיחה ←</div></a>
- <a class="card" href="tasks-spec.html"><div class="ic">📋</div><h2>משימות ותזכורות – אפיון</h2><p>איך מערכת התזכורות עובדת: מאיפה מגיעות המשימות, סדר עדיפויות, תדירות, סימון "בוצע" וסיכום יומי, וגם שאלות פתוחות להחלטה.</p><div class="go">לקריאה ←</div></a>
- <a class="card" href="tasks-setup.html"><div class="ic">⚙️</div><h2>התקנת מערכת המשימות</h2><p>הוראות התקנה צעד אחר צעד בחשבון Gmail של המזכיר: גיליון Google, תזכורות כל 10 דקות ומסך ניהול.</p><div class="go">להתקנה ←</div></a>
+ <a class="card" href="register.html"><div class="ic">📝</div><h2>רישום תלמידים</h2><p>קליטת טפסי רישום סרוקים, רשימת תלמידים, נוכחות, אישורים והודעות להורים.</p><div class="go">לפתיחה ←</div></a>
+ <a class="card" href="labels.html"><div class="ic">🏷️</div><h2>מדבקות שמות</h2><p>דף מדבקות אחד לכל הכיתה, עם כל מספר מדבקות בדף, סמל ליד השם וקובץ PDF מוכן להדפסה.</p><div class="go">לפתיחה ←</div></a>
+ <a class="card" href="tasks-setup.html"><div class="ic">📋</div><h2>משימות ותזכורות</h2><p>תזכורות למייל כל 10 דקות לפי סדר עדיפות, וסיכום בסוף היום. ההתקנה נעשית פעם אחת בחשבון ה-Gmail.</p><div class="go">להתקנה ←</div></a>
 </div>
-<footer>הנתונים נשמרים במחשב שלכם (מדבקות) או בחשבון ה-Google שלכם (משימות). שום מידע לא נשלח לשרת חיצוני.</footer>
+<div class="acc" id="acc" hidden><div id="accTxt"></div></div>
+<div class="more"><a href="spec.html">🧭 אפיון המערכת</a><a href="tasks-spec.html">📋 אפיון התזכורות</a><a href="admin-setup.html">🔑 ניהול הרשמה וקופונים (למנהל)</a></div>
+<footer>הנתונים של רישום התלמידים והמדבקות נשמרים במחשב שלכם. המשימות נשמרות בחשבון ה-Google שלכם.</footer>
+<script>
+document.getElementById("appName").textContent=(window.APP_CONFIG||{}).APP_NAME||"מערכת המזכירות";
+Auth.ready.then(u=>{if(!u)return;
+ document.getElementById("hello").textContent="שלום "+(u.name||"")+(u.school?" · "+u.school:"");
+ if(u.until){const a=document.getElementById("acc");a.hidden=false;
+  document.getElementById("accTxt").innerHTML=`הגישה שלך בתוקף עד <b>${u.until}</b> (${u.daysLeft} ימים). להארכה פנו למנהל המערכת.`}});
+</script>
 </body>
 </html>

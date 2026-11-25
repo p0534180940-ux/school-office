@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אפיון – מערכת המזכירות</title>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2a37;--mute:#5f6b7a;--line:#e3e7ed;--pri:#1d5fa8;--pri2:#e7f0fb;--warnb:#fdf3e2;--warn:#8a4f06;--okb:#e7f6ec;--ok:#166534;--badb:#fde8e8;--bad:#a61b1b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;color:var(--ink);background:#f3f5f8;font-size:17px;line-height:1.75}
+main{max-width:960px;margin:0 auto;padding:28px 22px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin-bottom:18px}
+h1{font-size:30px;margin:0 0 6px;line-height:1.3}
+h2{font-size:22px;margin:0 0 10px;color:var(--pri);display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-size:16px;flex:none}
+h3{font-size:18px;margin:16px 0 6px}
+.lead{font-size:19px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:16px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:right;vertical-align:top}
+th{background:#f6f8fb}
+.tag{border-radius:20px;padding:1px 10px;font-size:13px;font-weight:700;white-space:nowrap}
+.t-ok{background:var(--okb);color:var(--ok)}.t-warn{background:var(--warnb);color:var(--warn)}.t-info{background:var(--pri2);color:var(--pri)}
+.dec{background:var(--warnb);border-radius:10px;padding:12px 16px;margin:10px 0}
+.dec b{color:var(--warn)}
+.risk{background:var(--badb);color:var(--bad);border-radius:10px;padding:12px 16px;margin:10px 0}
+svg text{font-family:Assistant,Arial,sans-serif}
+code{background:#eef1f5;padding:1px 6px;border-radius:5px;font-size:15px}
+ol li,ul li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<main>
+<div class="card">
+<h1>🧭 מערכת המזכירות – אפיון מאוחד</h1>
+<p class="lead">אתר אחד שמרכז את שלושת הכלים שפותחו: רישום תלמידים, מדבקות שמות, ומשימות ותזכורות. בכניסה יש הרשמה עם קוד קופון, כך שאפשר לתת את המערכת גם למזכירים במוסדות אחרים.</p>
+<p style="color:var(--mute);font-size:15px">גרסה 1 · נובמבר 2026</p>
+</div>
+
+<div class="card">
+<h2><span class="n">1</span>מבנה המערכת</h2>
+<svg viewBox="0 80 900 320" role="img" aria-label="מבנה המערכת" style="width:100%;height:auto">
+ <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a96a8"/></marker></defs>
+ <g fill="none" stroke="#8a96a8" stroke-width="1.6">
+  <path d="M780 92 V128" marker-end="url(#ar)"/><path d="M620 182 H582" marker-end="url(#ar)"/>
+  <path d="M450 210 V250 H150 V280" marker-end="url(#ar)"/><path d="M450 210 V280" marker-end="url(#ar)"/><path d="M450 210 V250 H750 V280" marker-end="url(#ar)"/>
+ </g>
+ <rect x="690" y="30" width="180" height="62" rx="10" fill="#e7f0fb" stroke="#1d5fa8" stroke-width="1.5"/>
+ <text x="780" y="57" text-anchor="middle" font-weight="700" font-size="16" fill="#1f2a37">משתמש חדש</text><text x="780" y="78" text-anchor="middle" font-size="13" fill="#5f6b7a">מקבל ממך קוד קופון</text>
+ <rect x="640" y="130" width="280" height="106" rx="10" fill="#fff" stroke="#1d5fa8" stroke-width="2" transform="translate(-20 0)"/>
+ <text x="760" y="158" text-anchor="middle" font-weight="700" font-size="16" fill="#1f2a37">🔑 מסך כניסה</text>
+ <text x="760" y="182" text-anchor="middle" font-size="13" fill="#5f6b7a">הרשמה: שם + מייל + קופון</text>
+ <text x="760" y="202" text-anchor="middle" font-size="13" fill="#5f6b7a">כניסה: קוד חד-פעמי במייל</text>
+ <text x="760" y="222" text-anchor="middle" font-size="13" fill="#5f6b7a">נשמר 30 יום במחשב</text>
+ <rect x="320" y="150" width="260" height="60" rx="10" fill="#1d5fa8"/>
+ <text x="450" y="186" text-anchor="middle" font-weight="700" font-size="17" fill="#fff">🏠 דף ראשי – תפריט אחד</text>
+ <rect x="40" y="282" width="220" height="92" rx="10" fill="#fff" stroke="#8a96a8"/>
+ <text x="150" y="310" text-anchor="middle" font-weight="700" font-size="16" fill="#1f2a37">📝 רישום תלמידים</text>
+ <text x="150" y="332" text-anchor="middle" font-size="13" fill="#5f6b7a">קליטת טפסים, נוכחות, אישורים</text>
+ <text x="150" y="352" text-anchor="middle" font-size="13" fill="#5f6b7a">נשמר בדפדפן</text>
+ <rect x="340" y="282" width="220" height="92" rx="10" fill="#fff" stroke="#8a96a8"/>
+ <text x="450" y="310" text-anchor="middle" font-weight="700" font-size="16" fill="#1f2a37">🏷️ מדבקות</text>
+ <text x="450" y="332" text-anchor="middle" font-size="13" fill="#5f6b7a">דף משותף לכיתה, PDF</text>
+ <text x="450" y="352" text-anchor="middle" font-size="13" fill="#5f6b7a">נשמר בדפדפן</text>
+ <rect x="640" y="282" width="220" height="92" rx="10" fill="#fff" stroke="#8a96a8"/>
+ <text x="750" y="310" text-anchor="middle" font-weight="700" font-size="16" fill="#1f2a37">📋 משימות ותזכורות</text>
+ <text x="750" y="332" text-anchor="middle" font-size="13" fill="#5f6b7a">תזכורות במייל כל 10 דקות</text>
+ <text x="750" y="352" text-anchor="middle" font-size="13" fill="#5f6b7a">נשמר ב-Google של המשתמש</text>
+</svg>
+<table>
+<tr><th style="width:22%">רכיב</th><th>איפה זה רץ</th><th style="width:16%">מצב</th></tr>
+<tr><td>האתר עצמו</td><td>קוד בגיטהאב. האתר החי ב-GitHub Pages, ואתר הבדיקה ב-Netlify. שניהם מתעדכנים לבד מכל שינוי בקוד.</td><td><span class="tag t-warn">מחכה להפעלה</span></td></tr>
+<tr><td>שרת ההרשמה</td><td>Google Apps Script וגיליון בחשבון שלך. ממנו יוצאים מיילים עם קודי כניסה.</td><td><span class="tag t-warn">מחכה להתקנה</span></td></tr>
+<tr><td>רישום תלמידים</td><td>בדפדפן של המזכיר. קריאה אוטומטית של טפסים פועלת דרך שרת ההרשמה, ורק אם מוגדר מפתח API.</td><td><span class="tag t-ok">מוכן</span></td></tr>
+<tr><td>מדבקות</td><td>בדפדפן של המזכיר. ה-PDF נוצר במחשב, בלי שרת.</td><td><span class="tag t-ok">מוכן</span></td></tr>
+<tr><td>משימות ותזכורות</td><td>Apps Script נפרד בחשבון ה-Gmail של כל מזכיר, כדי שהתזכורות יגיעו מהמייל שלו.</td><td><span class="tag t-ok">מוכן, צריך התקנה</span></td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">2</span>הרשמה וכניסה עם קוד קופון</h2>
+<ol>
+<li><b>אתה יוצר קופון</b> בגיליון השרת, מהתפריט "יצירת קוד קופון חדש", ושולח אותו לאדם יחד עם הקישור.</li>
+<li><b>האדם נרשם</b>: שם, מוסד, מייל וקוד הקופון. קופון שגוי, שפג תוקפו או שכבר נוצל נדחה.</li>
+<li><b>מגיע קוד בן 6 ספרות למייל שלו</b>. הקוד תקף ל-15 דקות, ומותר עד 5 ניסיונות. כך גם מוודאים שהמייל באמת שלו.</li>
+<li><b>הוא נכנס</b>, והכניסה נשמרת במחשב שלו ל-30 יום. בכניסות הבאות מספיק המייל, והוא מקבל קוד חדש.</li>
+<li><b>אתה מקבל מייל</b> על כל הרשמה חדשה, וכל פעולה נרשמת ב"יומן".</li>
+</ol>
+<h3>סוגי גישה (מוכן כבר עכשיו, לפי הקופון)</h3>
+<table>
+<tr><th>תוכנית</th><th>מה קורה</th></tr>
+<tr><td><b>ניסיון</b></td><td>"ימי גישה" בקופון, למשל 14. בסוף התקופה הכניסה נחסמת עם הודעה "פנו למנהל המערכת".</td></tr>
+<tr><td><b>חודשי / שנתי</b></td><td>תאריך "בתוקף עד" אצל המשתמש. אחרי תשלום אתה מאריך את התאריך בגיליון.</td></tr>
+<tr><td><b>מלא</b></td><td>בלי תאריך תפוגה.</td></tr>
+</table>
+<p>14 ימים לפני סוף הגישה מופיעה למשתמש תזכורת בסרגל העליון: "נותרו X ימים".</p>
+<h3>תשלום – שלבים להרחבה בהמשך</h3>
+<table>
+<tr><th style="width:20%">שלב</th><th>איך זה יעבוד</th></tr>
+<tr><td>א׳ – ידני <span class="tag t-ok">כבר אפשרי</span></td><td>המשתמש משלם לך ישירות (העברה, אשראי וכו׳), ואתה מאריך את "בתוקף עד" בגיליון.</td></tr>
+<tr><td>ב׳ – קישור תשלום</td><td>כפתור "חידוש מנוי" באתר שמוביל לדף תשלום של ספק סליקה. אחרי התשלום אתה מאריך ידנית.</td></tr>
+<tr><td>ג׳ – אוטומטי</td><td>ספק הסליקה מודיע לשרת על תשלום, והתוקף מוארך לבד בכל חודש.</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">3</span>שלושת המודולים</h2>
+<h3>📝 רישום תלמידים</h3>
+<ul>
+<li>ההורים ממלאים טופס נייר. המזכיר סורק אותו או מצלם, המערכת ממלאת את השדות, והמזכיר בודק ומאשר.</li>
+<li>בדיקות אוטומטיות: ספרת ביקורת בתעודת זהות, תלמיד כפול, טלפון וחתימה.</li>
+<li>במודול גם רשימת תלמידים, נוכחות, אישורי לימודים, הודעות להורים ויומן.</li>
+</ul>
+<h3>🏷️ מדבקות</h3>
+<ul>
+<li><b>דף מדבקות משותף לכל הכיתה.</b> כל תלמיד מקבל כמה מדבקות עם השם שלו: אוטומטי (מילוי הדף) או מספר קבוע.</li>
+<li><b>מספר המדבקות בדף נכתב ידנית</b> לפי מה שכתוב על החבילה, למשל 72 או 92. הפריסה (עמודות ושורות) וגודל המדבקה מחושבים לבד, ואפשר לתקן אותם במדידה בסנטימטרים.</li>
+<li>סמל או תמונה לכל כיתה, דפים כלליים, דף בדיקת יישור, ו-PDF.</li>
+</ul>
+<h3>📋 משימות ותזכורות</h3>
+<ul><li>האפיון המפורט נמצא ב<a href="tasks-spec.html">אפיון התזכורות</a>: בדיקה כל 10 דקות, סדר עדיפות, כפתור "בוצע" במייל, וסיכום יומי ב-15:45.</li></ul>
+</div>
+
+<div class="card">
+<h2><span class="n">4</span>מידע ופרטיות</h2>
+<ul>
+<li>פרטי התלמידים (רישום ומדבקות) <b>נשמרים רק במחשב של המזכיר</b>, ולא עוברים לשרת. החיסרון: מחשב אחר לא רואה אותם. לכן יש כפתור גיבוי ושחזור.</li>
+<li>תמונת טופס שנשלחת לקריאה אוטומטית עוברת דרך השרת שלך אל Claude, ולא נשמרת בשרת.</li>
+<li>בשרת ההרשמה נשמרים רק שם, מוסד, מייל ותוקף הגישה של המשתמשים.</li>
+</ul>
+<div class="risk"><b>חשוב לדעת על ההגנה:</b> מסך הכניסה חוסם משתמשים רגילים. אבל הקוד של האתר ציבורי בגיטהאב, ולכן מי שמבין בתכנות יכול לעקוף את המסך ולהשתמש במדבקות או ברישום. הוא לא יקבל גישה למידע של אחרים, כי המידע נשמר במחשב של כל אחד. אם המערכת תימכר, השלב הבא הוא להעביר את הקוד למאגר פרטי ולהגיש את הכלים רק אחרי כניסה.</div>
+</div>
+
+<div class="card">
+<h2><span class="n">5</span>שלבי עבודה</h2>
+<table>
+<tr><th style="width:18%">שלב</th><th>מה</th><th style="width:16%">מצב</th></tr>
+<tr><td>1</td><td>העלאת האתר: GitHub Pages ו-Netlify לבדיקה, ושליחה למזכיר</td><td><span class="tag t-warn">ממתין לך</span></td></tr>
+<tr><td>2</td><td>התקנת שרת ההרשמה, חיבור לאתר ויצירת קופון ראשון למזכיר</td><td><span class="tag t-warn">ממתין לך</span></td></tr>
+<tr><td>3</td><td>התקנת המשימות בחשבון של המזכיר והחלטה על השאלות הפתוחות</td><td><span class="tag t-info">אחרי 2</span></td></tr>
+<tr><td>4</td><td>שמירת נתוני התלמידים בענן, כדי שאותם נתונים יהיו בכל מחשב</td><td><span class="tag t-info">להחלטה</span></td></tr>
+<tr><td>5</td><td>תשלום: קישור תשלום, ואחר כך חידוש אוטומטי</td><td><span class="tag t-info">להחלטה</span></td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">6</span>שאלות פתוחות</h2>
+<ol>
+<li>האם המזכיר צריך לראות את אותם נתונים מכמה מחשבים (בבית ובמשרד)? אם כן, צריך את שלב 4.</li>
+<li>מי יהיו המשתמשים הבאים: מזכירים במוסדות אחרים, או גם מנהלים ומורים?</li>
+<li>כמה ימי ניסיון לתת, וכמה יעלה מנוי חודשי?</li>
+<li>האם תשלום ישיר מולך (העברה) מספיק בשלב הראשון?</li>
+<li>האם להפעיל קריאה אוטומטית של טפסים? יש עלות קטנה לכל טופס, דרך מפתח API.</li>
+<li>שם המערכת: להשאיר "מערכת המזכירות" או לבחור שם אחר? השם משתנה במקום אחד, בקובץ <code>config.js</code>.</li>
+</ol>
+</div>
+</main>
+</body>
+</html>
