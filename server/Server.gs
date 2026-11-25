@@ -201,7 +201,7 @@ function apiExtract_(r) {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
     payload: JSON.stringify({
-      model: 'claude-sonnet-5-5', max_tokens: 1500,
+      model: PropertiesService.getScriptProperties().getProperty('MODEL') || 'claude-haiku-5-5', max_tokens: 1500,
       messages: [{ role: 'user', content: [
         { type: 'image', source: { type: 'base64', media_type: r.mediaType || 'image/jpeg', data: r.image } },
         { type: 'text', text: String(r.prompt || '').slice(0, 4000) }] }]
