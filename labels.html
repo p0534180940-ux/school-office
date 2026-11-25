@@ -82,6 +82,9 @@ header .btn{background:rgba(255,255,255,.15);color:#fff}
 .modal .box{background:#fff;border-radius:14px;padding:22px;width:min(560px,94vw);max-height:90vh;overflow:auto}
 .toast{position:fixed;bottom:20px;left:20px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
 .toast.show{opacity:1}
+.symbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px;cursor:pointer;line-height:0}.symbtn.on{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri) inset;background:var(--pri2)}
+.symgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.symgrid .symbtn{padding:5px}
+.dot{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}.dot.on{box-shadow:0 0 0 3px var(--ink)}
 .imgprev{width:44px;height:44px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
 #printArea{display:none}
 @media print{
@@ -134,8 +137,46 @@ function bestCols(n){let best=1,score=1e9;
 function autoSize(s){s.rows=Math.ceil(s.count/s.cols);
  s.w=+Math.max(0.5,(21-2*s.side-(s.cols-1)*s.gapX)/s.cols).toFixed(2);
  s.h=+Math.max(0.5,(29.7-2*s.top-(s.rows-1)*s.gapY)/s.rows).toFixed(2)}
-const EMOJIS=["⭐","🌟","✏️","📚","📖","🍎","🎈","🌈","☀️","🌙","🌸","🌻","🌳","🍀","🐝","🦋","🐠","🐻","🦁","🐘","🐢","🚀","🚂","⚽","🎨","🎵","🏫","✡️","🕎","💙","❤️","💚"];
-const KID_EMOJIS=["⭐","🍎","🚀","⚽","🌈","🐻","🦁","🐢","🐝","🦋","🐠","🚂","🎈","🌻","🍀","🌙","☀️","🍓","🍋","🚲","🎨","📚","✏️","🐘","🐳","🦊","🐧","🍉","🚁","⛵","🏀","🎵","🌳","🌸","🍪","🧩","🐞","🦒","🚜","🍇"];
+// ===================== סמלים מצוירים (במקום אימוג'י) =====================
+const PAL=["#E4572E","#2E86AB","#3BA55C","#E0A100","#8E44AD","#D81B60","#00897B","#EF6C00","#3F51B5","#6D4C41"];
+const W_="#ffffff";
+const ICONS={
+ star:["כוכב",c=>`<path d="M24 4l5.9 12.6 13.6 1.6-10 9.4 2.6 13.6L24 34.4 11.9 41.2l2.6-13.6-10-9.4 13.6-1.6z" fill="${c}"/>`],
+ apple:["תפוח",c=>`<path d="M24 15c-4-3-12-3-15 3-3 7 0 17 5 21 3 3 6 3 10 1 4 2 7 2 10-1 5-4 8-14 5-21-3-6-11-6-15-3z" fill="${c}"/><path d="M24 15c0-4 2-8 5-10" stroke="#6b4423" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M26 10c4-4 9-3 11-1-3 3-8 4-11 1z" fill="#3f9142"/>`],
+ pencil:["עיפרון",c=>`<g transform="rotate(45 24 24)"><rect x="18" y="4" width="12" height="28" fill="${c}"/><rect x="18" y="4" width="12" height="5" fill="#f3a5a5"/><path d="M18 32h12l-6 11z" fill="#f2d3a0"/><path d="M22.4 40h3.2L24 43z" fill="#333"/></g>`],
+ book:["ספר",c=>`<path d="M5 11c7-3 13-2 18 2v28c-5-4-11-5-18-2z" fill="${c}"/><path d="M43 11c-7-3-13-2-18 2v28c5-4 11-5 18-2z" fill="${c}" opacity=".75"/>`],
+ ball:["כדור",c=>`<circle cx="24" cy="24" r="19" fill="${c}"/><path d="M5 24h38M24 5c-7 6-7 32 0 38M24 5c7 6 7 32 0 38" stroke="${W_}" stroke-width="2.4" fill="none"/>`],
+ sun:["שמש",c=>`<circle cx="24" cy="24" r="9" fill="${c}"/><g stroke="${c}" stroke-width="3.6" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a=>{const r=a*Math.PI/180;return `<line x1="${(24+14*Math.cos(r)).toFixed(1)}" y1="${(24+14*Math.sin(r)).toFixed(1)}" x2="${(24+20*Math.cos(r)).toFixed(1)}" y2="${(24+20*Math.sin(r)).toFixed(1)}"/>`}).join("")}</g>`],
+ moon:["ירח",c=>`<path d="M30 5a19 19 0 1 0 13 27A15 15 0 0 1 30 5z" fill="${c}"/>`],
+ tree:["עץ",c=>`<rect x="21" y="30" width="6" height="13" rx="1" fill="#8b5a2b"/><circle cx="24" cy="19" r="15" fill="${c}"/>`],
+ house:["בית",c=>`<path d="M24 5L3 22h6v21h30V22h6z" fill="${c}"/><rect x="20" y="29" width="8" height="14" rx="1" fill="${W_}"/>`],
+ car:["מכונית",c=>`<path d="M8 28l5-11h20l8 11z" fill="${c}"/><rect x="3" y="27" width="42" height="10" rx="4" fill="${c}"/><path d="M15 19h7v8h-10zM25 19h7l4 8H25z" fill="${W_}" opacity=".85"/><circle cx="14" cy="38" r="5" fill="#333"/><circle cx="34" cy="38" r="5" fill="#333"/>`],
+ boat:["סירה",c=>`<path d="M5 31h38l-7 11H12z" fill="${c}"/><path d="M23 5v24H9z" fill="${c}" opacity=".8"/><path d="M26 9v20h12z" fill="${c}" opacity=".55"/>`],
+ kite:["עפיפון",c=>`<path d="M24 3l13 15-13 19-13-19z" fill="${c}"/><path d="M24 3v34M11 18h26" stroke="${W_}" stroke-width="2"/><path d="M24 37c-4 3 4 5 0 9" stroke="${c}" stroke-width="2.2" fill="none"/>`],
+ umbrella:["מטרייה",c=>`<path d="M3 25a21 21 0 0 1 42 0z" fill="${c}"/><path d="M24 25v13a4 4 0 0 1-8 0" stroke="#444" stroke-width="3" fill="none" stroke-linecap="round"/>`],
+ key:["מפתח",c=>`<circle cx="14" cy="24" r="10" fill="${c}"/><circle cx="14" cy="24" r="4" fill="${W_}"/><path d="M22 21h21v6h-4v6h-5v-6H22z" fill="${c}"/>`],
+ bell:["פעמון",c=>`<path d="M24 5c-8 0-12 6-12 14v9l-5 6h34l-5-6v-9c0-8-4-14-12-14z" fill="${c}"/><circle cx="24" cy="39" r="4.5" fill="${c}"/>`],
+ leaf:["עלה",c=>`<path d="M7 41C7 18 21 6 43 6c0 21-13 35-36 35z" fill="${c}"/><path d="M8 40L32 16" stroke="${W_}" stroke-width="2.6"/>`],
+ fish:["דג",c=>`<path d="M4 24c8-11 22-13 32 0-10 13-24 11-32 0z" fill="${c}"/><path d="M34 24l11-10v20z" fill="${c}"/><circle cx="13" cy="22" r="2.4" fill="${W_}"/>`],
+ flower:["פרח",c=>`${[0,72,144,216,288].map(a=>{const r=(a-90)*Math.PI/180;return `<circle cx="${(24+11*Math.cos(r)).toFixed(1)}" cy="${(24+11*Math.sin(r)).toFixed(1)}" r="8" fill="${c}"/>`}).join("")}<circle cx="24" cy="24" r="6.5" fill="#F6C343"/>`],
+ cloud:["ענן",c=>`<path d="M14 37a9 9 0 0 1-1-18 12 12 0 0 1 23-3 10 10 0 0 1 2 21z" fill="${c}"/>`],
+ drop:["טיפה",c=>`<path d="M24 3C18 14 9 22 9 30a15 15 0 0 0 30 0C39 22 30 14 24 3z" fill="${c}"/><path d="M17 30a7 7 0 0 0 6 7" stroke="${W_}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`],
+ crown:["כתר",c=>`<path d="M6 35L4 13l11 9 9-15 9 15 11-9-2 22z" fill="${c}"/><rect x="6" y="37" width="36" height="5" rx="1.5" fill="${c}"/>`],
+ note:["תו",c=>`<path d="M19 34V11l20-4v23" stroke="${c}" stroke-width="4" fill="none"/><circle cx="13" cy="35" r="6.5" fill="${c}"/><circle cx="33" cy="31" r="6.5" fill="${c}"/>`],
+ ruler:["סרגל",c=>`<rect x="3" y="15" width="42" height="18" rx="2.5" fill="${c}"/><path d="M10 15v7M17 15v5M24 15v7M31 15v5M38 15v7" stroke="${W_}" stroke-width="2"/>`],
+ bag:["ילקוט",c=>`<path d="M18 12V9a6 6 0 0 1 12 0v3" stroke="${c}" stroke-width="3.2" fill="none"/><rect x="9" y="12" width="30" height="32" rx="8" fill="${c}"/><rect x="15" y="28" width="18" height="10" rx="3" fill="${W_}" opacity=".55"/>`],
+ globe:["כדור הארץ",c=>`<circle cx="24" cy="24" r="19" fill="${c}"/><path d="M5 24h38M24 5c-7 6-7 32 0 38M24 5c7 6 7 32 0 38M9 14h30M9 34h30" stroke="${W_}" stroke-width="2" fill="none"/>`],
+ heart:["לב",c=>`<path d="M24 42S4 30 4 17a10 10 0 0 1 20-5 10 10 0 0 1 20 5c0 13-20 25-20 25z" fill="${c}"/>`],
+ rocket:["חללית",c=>`<path d="M24 3c8 6 10 16 8 27H16c-2-11 0-21 8-27z" fill="${c}"/><circle cx="24" cy="17" r="4" fill="${W_}"/><path d="M16 24l-7 9 8-1zM32 24l7 9-8-1z" fill="${c}"/><path d="M20 32h8l-4 11z" fill="#F59E0B"/>`],
+ balloon:["בלון",c=>`<ellipse cx="24" cy="18" rx="13" ry="15" fill="${c}"/><path d="M21.5 33h5L24 36z" fill="${c}"/><path d="M24 36c-4 4 4 6 0 10" stroke="#666" stroke-width="1.6" fill="none"/>`],
+ cup:["כוס",c=>`<path d="M9 13h25v14a11 11 0 0 1-11 11h-3A11 11 0 0 1 9 27z" fill="${c}"/><path d="M34 17h4a5.5 5.5 0 0 1 0 11h-4" stroke="${c}" stroke-width="4" fill="none"/>`],
+ clock:["שעון",c=>`<circle cx="24" cy="24" r="20" fill="${c}"/><circle cx="24" cy="24" r="15.5" fill="${W_}"/><path d="M24 14v10l7 5" stroke="${c}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`],
+ shell:["צדף",c=>`<path d="M24 42L5 20a20 20 0 0 1 38 0z" fill="${c}"/><path d="M24 42L12 12M24 42L24 7M24 42L36 12" stroke="${W_}" stroke-width="2.2"/>`],
+};
+const ICON_KEYS=Object.keys(ICONS);
+const svgOf=(key,color,px)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"${px?` width="${px}" height="${px}"`:''}>${(ICONS[key]||ICONS.star)[1](color||PAL[0])}</svg>`;
+const svgURL=(key,color)=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgOf(key,color));
+function symIcon(o){return {type:"image",value:svgURL(o.key,o.color)}}
 const FONTS=[["Assistant","אסיסטנט (רגיל)"],["Heebo","היבו"],["Rubik","רוביק (עגול)"],["Varela Round","ורלה (עגול וברור)"],["Secular One","סקולר (כותרת עבה)"],["Amatic SC","אמטיק (כתב יד)"]];
 const DEF={
   classes:[{id:"c1",name:"כיתה א'1",students:["יוסף כהן","משה לוי","אברהם פרידמן","דוד גולדברג","שמואל רוזנטל","יעקב שטרן"],icon:{type:"kids",value:""}}],
@@ -150,6 +191,7 @@ if(!S||!S.classes)S=structuredClone(DEF);
 for(const k of ["sheet","design","print"])S[k]={...DEF[k],...S[k]};
 if(!S.sheet.count)S.sheet.count=(S.sheet.cols*S.sheet.rows)||30;
 if(!S.kidsIcons){S.classes.forEach(c=>{if(!c.icon||c.icon.type=="emoji")c.icon={type:"kids",value:""}});S.kidsIcons=1}
+if(!S.svgIcons){S.classes.forEach(c=>{c.kidIcons={};if(c.icon&&c.icon.type=="emoji")c.icon={type:"sym",key:"star",color:PAL[1]}});S.svgIcons=1}
 if(S.print.mode){delete S.print.mode;S.print.each=0;S.print.fill="blank";S.print.general=0}
 const save=()=>{try{localStorage.setItem("labelsApp",JSON.stringify(S))}catch(e){toast("שימו לב: לא ניתן לשמור בדפדפן (ייתכן שהתמונה גדולה מדי)")}};
 const cls=()=>S.classes.find(c=>c.id==S.cur)||S.classes[0];
@@ -188,7 +230,7 @@ A[0]=()=>{
  $("#cStud").oninput=upd; upd();
  $("#fileIn").onchange=e=>{const f=e.target.files[0];e.target.value="";if(f)importFile(f)};
 };
-function addClass(){const id=uid();S.classes.push({id,name:"כיתה חדשה",students:[],icon:{type:"emoji",value:"⭐"}});S.cur=id;save();renderPanel();setTimeout(()=>$("#cName").select(),50)}
+function addClass(){const id=uid();S.classes.push({id,name:"כיתה חדשה",students:[],icon:{type:"kids",value:""}});S.cur=id;save();renderPanel();setTimeout(()=>$("#cName").select(),50)}
 function delClass(){if(S.classes.length<2){toast("חייבת להישאר לפחות כיתה אחת");return}
  confirmBox(`למחוק את "${esc(cls().name)}" עם כל התלמידים?`,()=>{S.classes=S.classes.filter(c=>c.id!=S.cur);S.cur=S.classes[0].id;save();renderPanel()})}
 function sortStud(){const c=cls();c.students.sort((a,b)=>a.localeCompare(b,"he"));save();renderPanel()}
@@ -219,7 +261,7 @@ async function importFile(f){
  if(ci>=0){
   const groups={};data.forEach(r=>{const n=nameOf(r);if(!n)return;const k=r[ci]||"ללא כיתה";(groups[k]=groups[k]||[]).push(n)});
   const names=Object.keys(groups);
-  names.forEach(k=>{let c=S.classes.find(x=>x.name==k);if(!c){c={id:uid(),name:k,students:[],icon:{type:"emoji",value:"⭐"}};S.classes.push(c)}c.students=groups[k]});
+  names.forEach(k=>{let c=S.classes.find(x=>x.name==k);if(!c){c={id:uid(),name:k,students:[],icon:{type:"kids",value:""}};S.classes.push(c)}c.students=groups[k]});
   S.cur=S.classes.find(x=>x.name==names[0]).id;save();renderPanel();toast(`יובאו ${names.length} כיתות`);
  }else{
   const list=data.map(nameOf).filter(Boolean);const c=cls();
@@ -284,8 +326,8 @@ function pDesign(){const d=S.design,c=cls(),ic=c.icon||{type:"none"};
  return `<h3>עיצוב המדבקה</h3>
  <h4>סמל ליד השם – ${esc(c.name)}</h4>
  <div class="hint">לכל כיתה אפשר לבחור סמל משלה.</div>
- <div class="seg"><button class="${ic.type=='kids'?'on':''}" onclick="setIconType('kids')">סמל שונה לכל תלמיד</button><button class="${ic.type=='emoji'?'on':''}" onclick="setIconType('emoji')">סמל אחד לכיתה</button><button class="${ic.type=='image'?'on':''}" onclick="setIconType('image')">תמונה שלי</button><button class="${ic.type=='none'?'on':''}" onclick="setIconType('none')">בלי</button></div>
- ${ic.type=='emoji'?`<div class="emojis">${EMOJIS.map(e=>`<button class="${ic.value==e?'on':''}" onclick="setEmoji('${e}')">${e}</button>`).join("")}</div>`:''}
+ <div class="seg"><button class="${ic.type=='kids'?'on':''}" onclick="setIconType('kids')">סמל שונה לכל תלמיד</button><button class="${ic.type=='sym'?'on':''}" onclick="setIconType('sym')">סמל אחד לכיתה</button><button class="${ic.type=='image'?'on':''}" onclick="setIconType('image')">תמונה שלי</button><button class="${ic.type=='none'?'on':''}" onclick="setIconType('none')">בלי</button></div>
+ ${ic.type=='sym'?`<div class="row" style="margin-bottom:12px"><button class="symbtn" onclick="pickIcon(-1)">${svgOf(ic.key,ic.color,40)}</button><span class="hint" style="margin:0">לחיצה על הסמל – בחירת סמל וצבע</span></div>`:''}
  ${ic.type=='kids'?kidIconsHtml(c):''}
  ${ic.type=='image'?`<div class="row" style="margin-bottom:10px">${ic.value?`<img class="imgprev" src="${ic.value}">`:''}<button class="btn sec" onclick="$('#imgIn').click()">🖼️ ${ic.value?'החלפת תמונה':'בחירת תמונה'}</button><input type="file" id="imgIn" accept="image/*" hidden></div><div class="hint">מומלץ תמונה פשוטה על רקע לבן או שקוף (PNG).</div>`:''}
  ${ic.type!='none'?`<div class="g2"><div class="f"><label>מיקום הסמל</label><select data-d="iconPos"><option value="right">מימין לשם</option><option value="left">משמאל לשם</option><option value="top">מעל השם</option></select></div>
@@ -298,21 +340,33 @@ function pDesign(){const d=S.design,c=cls(),ic=c.icon||{type:"none"};
  <label class="check"><input type="checkbox" data-d="bold" ${d.bold?'checked':''}> כתב מודגש</label>
  <label class="check"><input type="checkbox" data-d="showClass" ${d.showClass?'checked':''}> להוסיף את שם הכיתה בשורה קטנה מתחת לשם</label>
  <label class="check"><input type="checkbox" data-d="border" ${d.border?'checked':''}> מסגרת סביב כל מדבקה</label>`}
-A[2]=()=>{document.querySelectorAll("[data-kid]").forEach(sel=>sel.onchange=()=>{const c=cls();c.kidIcons[c.students[+sel.dataset.kid]]=sel.value;save();schedulePreview()});
- document.querySelectorAll("[data-d]").forEach(i=>{const k=i.dataset.d;if(i.tagName=="SELECT")i.value=S.design[k];
+A[2]=()=>{ document.querySelectorAll("[data-d]").forEach(i=>{const k=i.dataset.d;if(i.tagName=="SELECT")i.value=S.design[k];
   i.oninput=i.onchange=()=>{S.design[k]=i.type=="checkbox"?i.checked:i.type=="range"?+i.value:i.value;save();schedulePreview()}});
  const ii=$("#imgIn");if(ii)ii.onchange=async e=>{const f=e.target.files[0];if(!f)return;cls().icon={type:"image",value:await shrinkImg(f,240)};save();renderPanel()}};
-function setIconType(t){const c=cls();c.icon={type:t,value:t=="kids"?"":t=="emoji"?(c.icon&&c.icon.type=="emoji"?c.icon.value:"⭐"):(t=="image"&&c.icon&&c.icon.type=="image"?c.icon.value:"")};save();renderPanel();if(t=="image"&&!c.icon.value)setTimeout(()=>$("#imgIn").click(),50)}
+function setIconType(t){const c=cls();c.icon=t=="sym"?{type:"sym",key:"star",color:PAL[1]}:{type:t,value:t=="image"&&c.icon&&c.icon.type=="image"?c.icon.value:""};save();renderPanel();if(t=="image"&&!c.icon.value)setTimeout(()=>$("#imgIn").click(),50)}
 function kidIcon(c,name){c.kidIcons=c.kidIcons||{};
- if(!c.kidIcons[name]){const used=new Set(Object.values(c.kidIcons));const i=c.students.indexOf(name);
-  c.kidIcons[name]=KID_EMOJIS.find((e,j)=>!used.has(e)&&j>=Math.max(0,i)%KID_EMOJIS.length)||KID_EMOJIS.find(e=>!used.has(e))||KID_EMOJIS[Math.max(0,i)%KID_EMOJIS.length]}
- return c.kidIcons[name]}
+ let v=c.kidIcons[name];
+ if(!v||typeof v!="object"){const i=Math.max(0,c.students.indexOf(name));
+  const used=new Set(Object.values(c.kidIcons).filter(x=>x&&x.key).map(x=>x.key));
+  let key=ICON_KEYS[i%ICON_KEYS.length];if(used.has(key))key=ICON_KEYS.find(k=>!used.has(k))||key;
+  v=c.kidIcons[name]={key,color:PAL[i%PAL.length]}}
+ return v}
 function kidIconsHtml(c){c.students.forEach(n=>kidIcon(c,n));save();
- return `<div class="hint">כל תלמיד מקבל סמל משלו, אותו סמל בכל הסבבים. אפשר להחליף סמל ליד כל שם.</div>
- <div class="studlist" style="max-height:260px;margin-bottom:10px">${c.students.map((n,i)=>`<label style="justify-content:space-between"><span>${esc(n)}</span>
- <select data-kid="${i}" style="width:auto;font-size:20px;padding:2px 6px">${KID_EMOJIS.map(e=>`<option ${c.kidIcons[n]==e?'selected':''}>${e}</option>`).join("")}</select></label>`).join("")||'<span style="color:var(--mute)">אין תלמידים בכיתה</span>'}</div>
+ return `<div class="hint">כל תלמיד מקבל סמל משלו, אותו סמל בכל הסבבים. לחיצה על סמל – החלפה.</div>
+ <div class="studlist" style="max-height:300px;margin-bottom:10px">${c.students.map((n,i)=>`<label style="justify-content:space-between"><span>${esc(n)}</span>
+ <button class="symbtn" onclick="event.preventDefault();pickIcon(${i})">${svgOf(c.kidIcons[n].key,c.kidIcons[n].color,30)}</button></label>`).join("")||'<span style="color:var(--mute)">אין תלמידים בכיתה</span>'}</div>
  <button class="btn ghost" style="margin-bottom:12px" onclick="cls().kidIcons={};save();renderPanel()">🔀 חלוקה מחדש של הסמלים</button>`}
-function setEmoji(e){cls().icon={type:"emoji",value:e};save();renderPanel()}
+// חלון בחירת סמל וצבע. i = מספר התלמיד, או 1- לסמל הכיתה
+function pickIcon(i){const c=cls();const cur=i<0?c.icon:kidIcon(c,c.students[i]);let color=cur.color,key=cur.key;
+ const draw=()=>{$("#modalBox").innerHTML=`<h3 style="margin-top:0">בחירת סמל${i<0?' לכיתה':' – '+esc(c.students[i])}</h3>
+  <div class="row" style="margin-bottom:12px">${PAL.map(p=>`<button class="dot ${p==color?'on':''}" style="background:${p}" data-col="${p}"></button>`).join("")}</div>
+  <div class="symgrid">${ICON_KEYS.map(k=>`<button class="symbtn ${k==key?'on':''}" title="${ICONS[k][0]}" data-key="${k}">${svgOf(k,color,34)}</button>`).join("")}</div>
+  <div class="row" style="margin-top:14px"><button class="btn" id="symOk">אישור</button><button class="btn ghost" onclick="closeM()">ביטול</button></div>`;
+  document.querySelectorAll("[data-col]").forEach(b=>b.onclick=()=>{color=b.dataset.col;draw()});
+  document.querySelectorAll("[data-key]").forEach(b=>b.onclick=()=>{key=b.dataset.key;draw()});
+  $("#symOk").onclick=()=>{if(i<0)c.icon={type:"sym",key,color};else c.kidIcons[c.students[i]]={key,color};save();closeM();renderPanel()}};
+ draw();$("#modal").classList.add("show")}
+
 function shrinkImg(f,max){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/png"))};im.onerror=no;im.src=r.result};r.readAsDataURL(f)})}
 
 // ---------- 4. הדפסה ----------
@@ -388,14 +442,14 @@ function fitText(ctx,text,maxW,maxH,fam,wt,maxPx){
  const one=(s)=>{ctx.font=`${wt} ${s}px "${fam}"`;return ctx.measureText(text).width<=maxW&&s*lh<=maxH};
  let lo=4,hi=maxPx;for(let k=0;k<18;k++){const m=(lo+hi)/2;one(m)?lo=m:hi=m}best={lines:[text],size:lo};
  const words=text.split(/\s+/);
- if(words.length>1){let bestSplit=null;
+ if(words.length>1&&LINEMODE!="one"){let bestSplit=null;
   for(let i=1;i<words.length;i++){const a=words.slice(0,i).join(" "),b=words.slice(i).join(" ");
    let l2=4,h2=maxPx;const two=s=>{ctx.font=`${wt} ${s}px "${fam}"`;return Math.max(ctx.measureText(a).width,ctx.measureText(b).width)<=maxW&&2*s*lh<=maxH};
    for(let k=0;k<18;k++){const m=(l2+h2)/2;two(m)?l2=m:h2=m}
    if(!bestSplit||l2>bestSplit.size)bestSplit={lines:[a,b],size:l2}}
-  if(bestSplit&&bestSplit.size>best.size*1.18)best=bestSplit}
+  if(bestSplit&&(LINEMODE=="two"||bestSplit.size>best.size*1.18))best=bestSplit}
  return best}
-let UNI=0,MEASURE=false;
+let UNI=0,MEASURE=false,LINEMODE="";
 function drawLabel(ctx,x,y,w,h,item,icon,outline){
  const d=S.design;
  if(d.border||outline){ctx.save();ctx.strokeStyle=outline?"#d33":d.borderColor;ctx.lineWidth=Math.max(1,h*0.012);ctx.setLineDash(outline?[h*0.05,h*0.04]:[]);
@@ -425,19 +479,29 @@ function drawLabel(ctx,x,y,w,h,item,icon,outline){
  fit.lines.forEach((l,i)=>ctx.fillText(l,ix+iw/2,ty+lh*i+lh/2));
  if(item.sub){const ss=Math.min(subH*0.8,fit.size*0.55);ctx.font=`400 ${ss}px "${fam}"`;ctx.globalAlpha=.75;ctx.fillText(item.sub,ix+iw/2,ty+fit.lines.length*lh+subH/2)}
  ctx.restore()}
-function itemIcon(item,icon){if(!icon||icon.type!="kids")return icon;
- if(item.kid)return {type:"emoji",value:kidIcon(cls(),item.kid)};
- return item.text?{type:"none"}:{type:"emoji",value:"⭐"}}
+function itemIcon(item,icon){
+ if(!icon)return icon;
+ if(icon.type=="sym")return symIcon(icon);
+ if(icon.type!="kids")return icon;
+ if(item.kid)return symIcon(kidIcon(cls(),item.kid));
+ return item.text?{type:"none"}:symIcon({key:"star",color:PAL[1]})}
+// טעינה מראש של כל הסמלים לפני PDF/הדפסה
+async function preloadIcons(pages){const icon=cls().icon,urls=new Set();
+ pages.forEach(pg=>(pg.labels||[]).forEach(it=>{if(!it)return;const ic=itemIcon(it,icon);if(ic&&ic.type=="image"&&ic.value)urls.add(ic.value)}));
+ await Promise.all([...urls].map(u=>new Promise(ok=>{const im=getImg(u);if(im.complete&&im.naturalWidth)return ok();im.addEventListener("load",ok,{once:true});im.addEventListener("error",ok,{once:true});setTimeout(ok,3000)})))}
 function renderPage(canvas,dpi,page,outline){
  const s=S.sheet,k=dpi/2.54,W=Math.round(21*k),H=Math.round(29.7*k);
  canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d");
  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
  const icon=cls().icon,ox=(s.offX||0)/10*k,oy=(s.offY||0)/10*k;
  // גודל כתב אחיד לכל השמות בדף: לפי השם הארוך ביותר
- UNI=0;if(!outline){MEASURE=true;const seen={};let mn=1e9;
-  (page.labels||[]).forEach(it=>{if(!it||!it.text||seen[it.text+"|"+it.sub])return;seen[it.text+"|"+it.sub]=1;
-   const v=drawLabel(ctx,0,0,s.w*k,s.h*k,it,itemIcon(it,icon),false);if(typeof v=="number")mn=Math.min(mn,v)});
-  MEASURE=false;UNI=mn<1e9?mn:0;ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H)}
+ // גודל כתב ומספר שורות אחידים לכל השמות בדף: שורה אחת לכולם, או שתי שורות לכולם
+ UNI=0;LINEMODE="";if(!outline){MEASURE=true;
+  const items=[],seen={};(page.labels||[]).forEach(it=>{if(it&&it.text&&!seen[it.text+"|"+it.sub]){seen[it.text+"|"+it.sub]=1;items.push(it)}});
+  const minSize=mode=>{LINEMODE=mode;let mn=1e9;items.forEach(it=>{const v=drawLabel(ctx,0,0,s.w*k,s.h*k,it,itemIcon(it,icon),false);if(typeof v=="number")mn=Math.min(mn,v)});return mn};
+  const one=minSize("one"),two=items.some(it=>/\s/.test(it.text))?minSize("two"):0;
+  if(two>one*1.25){LINEMODE="two";UNI=two}else{LINEMODE="one";UNI=one<1e9?one:0}
+  MEASURE=false;ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H)}
  let i=0;
  for(let r=0;r<s.rows;r++)for(let c=0;c<s.cols;c++){
   // סדר מימין לשמאל: המדבקה הראשונה בפינה הימנית העליונה
@@ -476,7 +540,7 @@ function progress(on,frac,txt){$("#progBox")&&($("#progBox").style.display=on?"b
 const fileName=()=>`מדבקות - ${cls().name}.pdf`.replace(/[\\/:*?"<>|]/g,"-");
 async function doPDF(){
  const pages=buildPages();if(!pages.length)return;
- await fontsReady();
+ await fontsReady();await preloadIcons(pages);
  const cv=document.createElement("canvas"),imgs=[];
  for(let i=0;i<pages.length;i++){
   progress(true,i/pages.length,`מכין דף ${i+1} מתוך ${pages.length}…`);await new Promise(r=>setTimeout(r,0));
