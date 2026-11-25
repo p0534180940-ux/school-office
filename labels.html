@@ -303,23 +303,25 @@ function setEmoji(e){cls().icon={type:"emoji",value:e};save();renderPanel()}
 function shrinkImg(f,max){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/png"))};im.onerror=no;im.src=r.result};r.readAsDataURL(f)})}
 
 // ---------- 4. הדפסה ----------
-function perStudent(){const n=selStudents().length,per=S.sheet.count;return S.print.each>0?S.print.each:Math.max(1,Math.floor(per/Math.max(1,n)))}
+// כמה פעמים עוברים על כל הכיתה (סבבים). אוטומטי = ממלאים את כל הדף
+function rounds(){const n=selStudents().length,per=S.sheet.count;return S.print.each>0?S.print.each:Math.max(1,Math.ceil(per/Math.max(1,n)))}
+function perStudent(){return rounds()}
 function pPrint(){const p=S.print,c=cls(),per=S.sheet.count;
  const studs=selStudents();const pages=buildPages();const each=perStudent();
- const used=studs.length*each,sheets=Math.ceil(used/per)||0;
+ const used=p.each>0?studs.length*p.each:per,sheets=Math.ceil(used/per)||0;
  return `<h3>הדפסה – ${esc(c.name)}</h3>
  <div class="chips">${S.classes.map(k=>`<button class="chip ${k.id==c.id?'on':''}" onclick="S.cur='${k.id}';S.print.only=null;save();renderPanel()">${esc(k.name)}</button>`).join("")}</div>
- <div class="note n-info">📄 כל הכיתה מודפסת על <b>דף משותף</b>: כל תלמיד מקבל כמה מדבקות עם השם שלו, אחד אחרי השני.</div>
- <div class="g2"><div class="f"><label>כמה מדבקות לכל תלמיד?</label><select id="pEach"><option value="0">אוטומטי – למלא את הדף (${Math.max(1,Math.floor(per/Math.max(1,studs.length)))})</option>${[1,2,3,4,5,6,8,10,12,15,20].map(n=>`<option value="${n}">${n}</option>`).join("")}</select></div>
- <div class="f"><label>מדבקות שנשארות פנויות</label><select id="pFill"><option value="blank">להשאיר ריקות</option><option value="class">שם הכיתה</option><option value="icon">רק הסמל</option></select></div></div>
+ <div class="note n-info">📄 השמות מודפסים <b>לפי סדר הכיתה, וחוזרים שוב ושוב</b>: יוסף, משה, אברהם… ובסוף הרשימה מתחילים שוב מהראשון.</div>
+ <div class="g2"><div class="f"><label>כמה פעמים לעבור על כל הכיתה?</label><select id="pEach"><option value="0">אוטומטי – למלא את כל הדף</option>${[1,2,3,4,5,6,8,10,12,15,20].map(n=>`<option value="${n}">${n} ${n==1?"פעם":"פעמים"}</option>`).join("")}</select></div>
+ <div class="f"><label>מדבקות שנשארות פנויות</label><select id="pFill"><option value="blank">להשאיר ריקות</option><option value="continue">להמשיך את הסבב</option><option value="class">שם הכיתה</option><option value="icon">רק הסמל</option></select></div></div>
  <div class="g2"><div class="f"><label>דפים כלליים נוספים</label><input type="number" min="0" max="50" step="1" id="pGen" value="${p.general}"></div>
  <div class="f"><label>מה כתוב בדפים הכלליים</label><select id="pGenType"><option value="class">שם הכיתה</option><option value="custom">טקסט שלי</option><option value="blank">רק הסמל (בלי טקסט)</option></select></div></div>
  ${p.generalType=='custom'?`<div class="f"><label>הטקסט לדפים הכלליים</label><input id="pGenText" value="${esc(p.generalText)}" placeholder="לדוגמה: ספריית הכיתה"></div>`:''}
  <details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">בחירת תלמידים מסוימים (${studs.length} מתוך ${c.students.length})</summary>
  <div class="row" style="margin:8px 0"><button class="btn ghost" onclick="S.print.only=null;save();renderPanel()">כולם</button><button class="btn ghost" onclick="S.print.only=[];save();renderPanel()">אף אחד</button></div>
  <div class="studlist">${c.students.map((n,i)=>`<label><input type="checkbox" data-i="${i}" ${studs.includes(n)?'checked':''}> ${esc(n)}</label>`).join("")||'<span style="color:var(--mute)">אין תלמידים בכיתה</span>'}</div></details>
- <div class="stat"><div><b>${studs.length}</b>תלמידים</div><div><b>${each}</b>מדבקות לתלמיד</div><div><b>${pages.length}</b>דפים להדפסה</div></div>
- ${sheets>1?`<div class="note n-warn">הכיתה לא נכנסת בדף אחד: ${used} מדבקות, ובדף יש ${per}. יודפסו ${sheets} דפים. כדי להיכנס בדף אחד אפשר להקטין את מספר המדבקות לכל תלמיד.</div>`:''}
+ <div class="stat"><div><b>${studs.length}</b>תלמידים</div><div><b>${p.each>0?each:Math.floor(per/Math.max(1,studs.length))+"–"+Math.ceil(per/Math.max(1,studs.length))}</b>מדבקות לכל תלמיד</div><div><b>${pages.length}</b>דפים להדפסה</div></div>
+ ${sheets>1?`<div class="note n-warn">${used} מדבקות, ובדף יש ${per}, ולכן יודפסו ${sheets} דפים. כדי להיכנס בדף אחד אפשר לבחור פחות סבבים.</div>`:''}
  <div class="row" style="margin-top:8px"><button class="btn big" onclick="doPDF()" ${pages.length?'':'disabled'}>📄 הורדת PDF</button><button class="btn big sec" onclick="doPrint()" ${pages.length?'':'disabled'}>🖨️ הדפסה ישירה</button></div>
  <div id="progBox" style="display:none"><div class="prog"><div id="prog"></div></div><div id="progTxt" class="hint"></div></div>
  <div class="note n-warn" style="margin-top:14px">🖨️ <b>חשוב להדפסה מדויקת:</b> בחלון ההדפסה בוחרים גודל <b>"גודל בפועל" / 100%</b>, ולא "התאם לדף". נייר A4, בלי שוליים נוספים.</div>
@@ -343,12 +345,17 @@ function buildPages(){
  const gText=p.generalType=="class"?c.name:p.generalType=="custom"?p.generalText:"";
  const pages=[];
  if(per<1||(!studs.length&&!p.general))return pages;
- // דף משותף לכל הכיתה: כל תלמיד מקבל X מדבקות ברצף
- const each=perStudent(),all=[];
- studs.forEach(n=>{for(let k=0;k<each;k++)all.push({text:n,sub})});
+ // סבבים: כל הכיתה לפי הסדר, ושוב מההתחלה
+ const all=[];
+ if(studs.length){
+  const total=p.each>0?studs.length*p.each:per;   // אוטומטי = דף אחד מלא
+  for(let i=0;i<total;i++)all.push({text:studs[i%studs.length],sub});
+ }
  for(let i=0;i<all.length;i+=per){
   const labels=all.slice(i,i+per);
-  if(labels.length<per&&p.fill!="blank"){const f={text:p.fill=="class"?c.name:"",sub:""};while(labels.length<per)labels.push(f)}
+  if(labels.length<per&&p.fill!="blank"){
+   if(p.fill=="continue"){while(labels.length<per){labels.push({text:studs[(i+labels.length)%studs.length],sub})}}
+   else{const f={text:p.fill=="class"?c.name:"",sub:""};while(labels.length<per)labels.push(f)}}
   pages.push({title:`${c.name}${all.length>per?` – דף ${pages.length+1}`:''}`,labels})}
  for(let g=0;g<p.general;g++)pages.push({title:`כללי ${g+1}`,labels:Array(per).fill({text:gText,sub:gText&&S.design.showClass&&p.generalType!="class"?c.name:"",general:true})});
  return pages}
@@ -369,6 +376,7 @@ function fitText(ctx,text,maxW,maxH,fam,wt,maxPx){
    if(!bestSplit||l2>bestSplit.size)bestSplit={lines:[a,b],size:l2}}
   if(bestSplit&&bestSplit.size>best.size*1.18)best=bestSplit}
  return best}
+let UNI=0,MEASURE=false;
 function drawLabel(ctx,x,y,w,h,item,icon,outline){
  const d=S.design;
  if(d.border||outline){ctx.save();ctx.strokeStyle=outline?"#d33":d.borderColor;ctx.lineWidth=Math.max(1,h*0.012);ctx.setLineDash(outline?[h*0.05,h*0.04]:[]);
@@ -389,7 +397,8 @@ function drawLabel(ctx,x,y,w,h,item,icon,outline){
  if(noText)return;
  const wt=d.bold?700:400,fam=d.font;
  const subH=item.sub?ih*0.24:0;
- const fit=fitText(ctx,item.text,iw,ih-subH,fam,wt,ih*d.maxSize/100*1.6);
+ const fit=fitText(ctx,item.text,iw,ih-subH,fam,wt,Math.min(ih*d.maxSize/100*1.6,UNI||1e9));
+ if(MEASURE)return fit.size;
  const lh=fit.size*1.12,block=fit.lines.length*lh+(item.sub?subH:0);
  let ty=iy+(ih-block)/2;
  ctx.save();ctx.fillStyle=d.color;ctx.direction="rtl";ctx.textAlign="center";ctx.textBaseline="middle";
@@ -402,6 +411,11 @@ function renderPage(canvas,dpi,page,outline){
  canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d");
  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
  const icon=cls().icon,ox=(s.offX||0)/10*k,oy=(s.offY||0)/10*k;
+ // גודל כתב אחיד לכל השמות בדף: לפי השם הארוך ביותר
+ UNI=0;if(!outline){MEASURE=true;const seen={};let mn=1e9;
+  (page.labels||[]).forEach(it=>{if(!it||!it.text||seen[it.text+"|"+it.sub])return;seen[it.text+"|"+it.sub]=1;
+   const v=drawLabel(ctx,0,0,s.w*k,s.h*k,it,icon,false);if(typeof v=="number")mn=Math.min(mn,v)});
+  MEASURE=false;UNI=mn<1e9?mn:0;ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H)}
  let i=0;
  for(let r=0;r<s.rows;r++)for(let c=0;c<s.cols;c++){
   // סדר מימין לשמאל: המדבקה הראשונה בפינה הימנית העליונה
@@ -497,7 +511,7 @@ function showHelp(){infoBox(`<h3 style="margin-top:0">איך משתמשים – 
 <li><b>כיתות:</b> כותבים את שם הכיתה ומדביקים את שמות התלמידים (שם בכל שורה), או מייבאים קובץ אקסל.</li>
 <li><b>סוג הדף:</b> כותבים כמה מדבקות יש בדף (לפי מה שכתוב על החבילה). אם צריך דיוק, מודדים עם סרגל ומדפיסים פעם אחת "דף בדיקת יישור" על נייר רגיל.</li>
 <li><b>עיצוב:</b> בוחרים סמל לכיתה, גופן וצבע.</li>
-<li><b>הדפסה:</b> כל הכיתה יוצאת על דף משותף. בוחרים כמה מדבקות לכל תלמיד, ולוחצים "הורדת PDF" או "הדפסה ישירה".</li></ol>
+<li><b>הדפסה:</b> השמות יוצאים לפי סדר הכיתה וחוזרים שוב ושוב עד שהדף מתמלא. לוחצים "הורדת PDF" או "הדפסה ישירה".</li></ol>
 <p>בחלון ההדפסה חשוב לבחור <b>גודל בפועל / 100%</b>.</p>
 <p style="color:var(--mute)">הכול נשמר אוטומטית בדפדפן הזה. כדי להעביר למחשב אחר – "גיבוי" ואז "שחזור".</p>`)}
 
