@@ -4,5 +4,5 @@
 window.APP_CONFIG = {
   API_URL: "",
   APP_NAME: "מערכת המזכירות",
-  OWNER_CONTACT: "p0534180940@gmail.com"
+  OWNER_CONTACT: "l05832555@gmail.com"
 };
